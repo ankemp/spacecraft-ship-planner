@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Grid, Sky, Environment, Box, Edges } from '@react-three/drei';
 import { useShipStore, getBlockBounds } from '../store/shipStore';
@@ -7,37 +7,23 @@ import { Block } from './Block';
 import { BLOCK_DEFINITIONS } from '../config/blocks';
 import * as THREE from 'three';
 
-export function Scene() {
-  const blocks = useShipStore(s => s.blocks);
-  const activeTool = useShipStore(s => s.activeTool);
-  const setActiveTool = useShipStore(s => s.setActiveTool);
+interface KeyboardHandlerProps {
+  setRotation: React.Dispatch<React.SetStateAction<[number, number, number]>>;
+}
+
+function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
+  const { camera } = useThree();
+
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
   const movingBlock = useShipStore(s => s.movingBlock);
-
-  const addBlock = useShipStore(s => s.addBlock);
-  const removeBlock = useShipStore(s => s.removeBlock);
-  const checkCollision = useShipStore(s => s.checkCollision);
-  const startMoveBlock = useShipStore(s => s.startMoveBlock);
-  const placeMovingBlock = useShipStore(s => s.placeMovingBlock);
   const cancelMoveBlock = useShipStore(s => s.cancelMoveBlock);
-  const nudgeBlock = useShipStore(s => s.nudgeBlock);
   const rotateBlock = useShipStore(s => s.rotateBlock);
+  const setActiveTool = useShipStore(s => s.setActiveTool);
+  const startMoveBlock = useShipStore(s => s.startMoveBlock);
+  const removeBlock = useShipStore(s => s.removeBlock);
+  const nudgeBlock = useShipStore(s => s.nudgeBlock);
 
-  const [cursorPos, setCursorPos] = useState<[number, number, number] | null>(null);
-  const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
-  const [prevMovingBlockId, setPrevMovingBlockId] = useState<string | null>(null);
-  const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
-
-  // Sync rotation state when block is picked up
-  if (movingBlock && movingBlock.id !== prevMovingBlockId) {
-    setPrevMovingBlockId(movingBlock.id);
-    setRotation(movingBlock.rotation);
-  } else if (!movingBlock && prevMovingBlockId !== null) {
-    setPrevMovingBlockId(null);
-  }
-
-  // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Allow Esc to cancel moving or deselect
@@ -92,42 +78,104 @@ export function Scene() {
 
       // Nudging
       if (selectedBlockId && !movingBlock) {
-        if (e.key === 'ArrowLeft') {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
           e.preventDefault();
-          nudgeBlock(selectedBlockId, [-1, 0, 0]);
-        } else if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          nudgeBlock(selectedBlockId, [1, 0, 0]);
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          if (e.shiftKey) {
-            nudgeBlock(selectedBlockId, [0, 1, 0]);
-          } else {
-            nudgeBlock(selectedBlockId, [0, 0, -1]);
+
+          // Shift + ArrowUp/ArrowDown: vertical nudge (absolute Y axis)
+          if (e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+            const deltaY = e.key === 'ArrowUp' ? 1 : -1;
+            nudgeBlock(selectedBlockId, [0, deltaY, 0]);
+            return;
           }
-        } else if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          if (e.shiftKey) {
-            nudgeBlock(selectedBlockId, [0, -1, 0]);
-          } else {
-            nudgeBlock(selectedBlockId, [0, 0, 1]);
+
+          // Horizontal camera-relative nudge (projected to XZ plane and snapped)
+          const forward = new THREE.Vector3();
+          camera.getWorldDirection(forward);
+          forward.y = 0;
+          if (forward.lengthSq() < 0.0001) {
+            forward.copy(camera.up);
+            forward.y = 0;
+            if (forward.lengthSq() < 0.0001) {
+              forward.set(0, 0, -1);
+            }
           }
+          forward.normalize();
+
+          const right = new THREE.Vector3();
+          right.crossVectors(forward, camera.up);
+          right.y = 0;
+          if (right.lengthSq() < 0.0001) {
+            right.set(1, 0, 0);
+          }
+          right.normalize();
+
+          const moveDir = new THREE.Vector3();
+          if (e.key === 'ArrowUp') {
+            moveDir.copy(forward);
+          } else if (e.key === 'ArrowDown') {
+            moveDir.copy(forward).negate();
+          } else if (e.key === 'ArrowLeft') {
+            moveDir.copy(right).negate();
+          } else if (e.key === 'ArrowRight') {
+            moveDir.copy(right);
+          }
+
+          let delta: [number, number, number];
+          if (Math.abs(moveDir.x) > Math.abs(moveDir.z)) {
+            delta = [Math.sign(moveDir.x), 0, 0];
+          } else {
+            delta = [0, 0, Math.sign(moveDir.z)];
+          }
+
+          nudgeBlock(selectedBlockId, delta);
         }
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     selectedBlockId,
     movingBlock,
+    camera,
     setActiveTool,
     startMoveBlock,
     cancelMoveBlock,
     setSelectedBlockId,
     removeBlock,
     nudgeBlock,
-    rotateBlock
+    rotateBlock,
+    setRotation
   ]);
+
+  return null;
+}
+
+export function Scene() {
+  const blocks = useShipStore(s => s.blocks);
+  const activeTool = useShipStore(s => s.activeTool);
+  const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
+  const movingBlock = useShipStore(s => s.movingBlock);
+
+  const addBlock = useShipStore(s => s.addBlock);
+  const checkCollision = useShipStore(s => s.checkCollision);
+  const placeMovingBlock = useShipStore(s => s.placeMovingBlock);
+  const cancelMoveBlock = useShipStore(s => s.cancelMoveBlock);
+
+  const [cursorPos, setCursorPos] = useState<[number, number, number] | null>(null);
+  const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
+  const [prevMovingBlockId, setPrevMovingBlockId] = useState<string | null>(null);
+  const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Sync rotation state when block is picked up
+  if (movingBlock && movingBlock.id !== prevMovingBlockId) {
+    setPrevMovingBlockId(movingBlock.id);
+    setRotation(movingBlock.rotation);
+  } else if (!movingBlock && prevMovingBlockId !== null) {
+    setPrevMovingBlockId(null);
+  }
+
+
 
   const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
@@ -217,6 +265,7 @@ export function Scene() {
 
   return (
     <Canvas camera={{ position: [15, 15, 15], fov: 50 }}>
+      <KeyboardHandler setRotation={setRotation} />
       <Sky sunPosition={[100, 20, 100]} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 20, 10]} intensity={1} castShadow />
