@@ -17,7 +17,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     name: 'Steel (4x3x2)',
     dimensions: [4, 3, 2],
     costs: { smallSteelParts: 2, supportHardware: 4 },
-    color: '#888888',
+    color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_001'
   },
@@ -26,7 +26,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     name: 'Steel (4x3x1)',
     dimensions: [4, 3, 1],
     costs: { smallSteelParts: 2, supportHardware: 2 },
-    color: '#a0a0a0',
+    color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_004'
   },
@@ -35,7 +35,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     name: 'Steel (6x3x2)',
     dimensions: [6, 3, 2],
     costs: { smallSteelParts: 3, supportHardware: 6 },
-    color: '#777777',
+    color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_002'
   },
@@ -53,7 +53,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     name: 'Steel (8x3x2)',
     dimensions: [8, 3, 2],
     costs: { smallSteelParts: 4, supportHardware: 8 },
-    color: '#666666',
+    color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_003'
   },
@@ -62,7 +62,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     name: 'Steel (8x3x1)',
     dimensions: [8, 3, 1],
     costs: { smallSteelParts: 4, supportHardware: 4 },
-    color: '#808080',
+    color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_006'
   },
