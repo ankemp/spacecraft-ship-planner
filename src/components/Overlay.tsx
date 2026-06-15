@@ -135,7 +135,7 @@ export function Overlay() {
       
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black/85 backdrop-blur-md px-5 py-3 rounded-full border border-blue-500/30 text-white font-medium text-xs flex items-center gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.5),_0_0_20px_rgba(59,130,246,0.15)] animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black/85 backdrop-blur-md px-5 py-3 rounded-full border border-blue-500/30 text-white font-medium text-xs flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-300">
           <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
@@ -145,7 +145,7 @@ export function Overlay() {
 
       {/* Left Panel: Palette */}
       <div 
-        className={`absolute top-6 bottom-24 w-72 bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col gap-4 pointer-events-auto transition-all duration-300 ease-in-out select-none z-30 ${
+        className={`absolute top-6 bottom-24 w-72 bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4 pointer-events-auto transition-all duration-300 ease-in-out select-none z-30 ${
           isPaletteOpen ? 'left-6 opacity-100' : '-left-80 opacity-0 pointer-events-none'
         }`}
       >
@@ -195,7 +195,7 @@ export function Overlay() {
                         setSelectedBlockId(null);
                       }}
                       className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer ${activeTool === def.type
-                          ? 'bg-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.3)] border-blue-400/50 scale-102'
+                          ? 'bg-blue-500/20 border-blue-400/50 scale-102'
                           : 'bg-white/5 hover:bg-white/10 border-transparent hover:scale-101'
                         } border text-left`}
                     >
@@ -217,7 +217,7 @@ export function Overlay() {
       <div className="absolute top-6 right-6 bottom-6 w-72 flex flex-col gap-4 pointer-events-auto overflow-y-auto pr-1 select-none custom-scrollbar z-30">
         
         {/* BOM Card */}
-        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
           <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px] mb-4">Bill of Materials</h2>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5">
@@ -236,7 +236,7 @@ export function Overlay() {
                 href={plannerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] hover:scale-102 active:scale-98 cursor-pointer"
+                className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 hover:scale-102 active:scale-98 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
@@ -281,7 +281,7 @@ export function Overlay() {
 
         {/* Selected Block Card */}
         {selectedBlock && (
-          <div className="bg-black/80 backdrop-blur-xl p-5 rounded-2xl border border-blue-500/30 shadow-[0_8px_32px_rgba(0,0,0,0.7)] flex flex-col gap-4 animate-in fade-in slide-in-from-right-5 duration-300">
+          <div className="bg-black/80 backdrop-blur-xl p-5 rounded-2xl border border-blue-500/30 flex flex-col gap-4 animate-in fade-in slide-in-from-right-5 duration-300">
             <div className="flex justify-between items-center border-b border-white/10 pb-2 flex-shrink-0">
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-blue-400">Selected Block</span>
@@ -317,7 +317,7 @@ export function Overlay() {
             <div className="flex flex-col gap-2">
               <button
                 onClick={() => startMoveBlock(selectedBlock.id)}
-                className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:scale-102 cursor-pointer"
+                className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 hover:scale-102 cursor-pointer"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 3.75H6A2.25 2.25 0 003.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0120.25 6v1.5m0 9V18a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -415,7 +415,7 @@ export function Overlay() {
         )}
 
         {/* Blueprint Storage Card */}
-        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col gap-3">
+        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-3">
           <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Ship Storage</h2>
           
           {/* Saved Ships List */}
@@ -566,7 +566,7 @@ export function Overlay() {
                 <button
                   onClick={handleSaveCurrentShip}
                   disabled={!shipNameInput.trim()}
-                  className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg text-xs font-bold shadow-[0_0_10px_rgba(59,130,246,0.2)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   Save
                 </button>
@@ -592,7 +592,7 @@ export function Overlay() {
         
         {/* Hotkeys Popover */}
         {showHotkeys && (
-          <div className="bg-black/90 backdrop-blur-2xl border border-white/10 p-5 rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.8),_0_0_30px_rgba(59,130,246,0.15)] w-80 text-xs text-white flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 select-none">
+          <div className="bg-black/90 backdrop-blur-2xl border border-white/10 p-5 rounded-2xl w-80 text-xs text-white flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 select-none">
             <div className="flex justify-between items-center border-b border-white/10 pb-2">
               <span className="font-bold text-blue-400 uppercase tracking-wider text-[10px]">Controls & Hotkeys</span>
               <button 
@@ -644,14 +644,14 @@ export function Overlay() {
         )}
 
         {/* Floating Dock */}
-        <div className="bg-black/75 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.5),_0_0_20px_rgba(255,255,255,0.05)] flex items-center gap-2.5 h-12">
+        <div className="bg-black/75 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full flex items-center gap-2.5 h-12">
           
           {/* Toggle Block Palette */}
           <button
             onClick={() => setIsPaletteOpen(!isPaletteOpen)}
             className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${
               isPaletteOpen 
-                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' 
                 : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
             }`}
             title="Toggle Block Palette"
@@ -669,7 +669,7 @@ export function Overlay() {
             }}
             className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${
               activeTool === 'select'
-                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 shadow-[0_0_15px_rgba(59,130,246,0.35)]'
+                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
                 : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
             }`}
             title="Select & Move Mode (S)"
@@ -712,7 +712,7 @@ export function Overlay() {
             onClick={() => setShowHotkeys(!showHotkeys)}
             className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${
               showHotkeys
-                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30 shadow-[0_0_15px_rgba(59,130,246,0.35)]'
+                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
                 : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
             }`}
             title="Toggle Controls Help"
