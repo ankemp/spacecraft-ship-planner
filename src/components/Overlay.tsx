@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useShipStore, selectBOM, selectStats } from '../store/shipStore';
 import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
-import { getCategoryIcon, GripIcon, StatIcon } from './Icon';
+import { CategoryIcon, GripIcon, StatIcon } from './Icon';
 
 const formatStatKey = (key: string): string => {
   return key
@@ -177,21 +177,19 @@ export function Overlay() {
     return () => clearTimeout(timer);
   }, [toast, setToast]);
 
-  const lastActiveToolRef = useRef(activeTool);
+  const [prevActiveTool, setPrevActiveTool] = useState(activeTool);
 
-  // Sync category on active tool change
-  useEffect(() => {
-    if (activeTool !== lastActiveToolRef.current) {
-      lastActiveToolRef.current = activeTool;
-      if (activeTool && activeTool !== 'select') {
-        const def = BLOCK_DEFINITIONS[activeTool];
-        if (def && def.group && def.group !== activeCategory) {
-          setActiveCategory(def.group);
-          setIsDetailPanelOpen(true);
-        }
+  // Sync category on active tool change during render
+  if (activeTool !== prevActiveTool) {
+    setPrevActiveTool(activeTool);
+    if (activeTool && activeTool !== 'select') {
+      const def = BLOCK_DEFINITIONS[activeTool];
+      if (def && def.group && def.group !== activeCategory) {
+        setActiveCategory(def.group);
+        setIsDetailPanelOpen(true);
       }
     }
-  }, [activeTool, activeCategory]);
+  }
 
   // Group blocks by group property
   const groupedBlocks: Record<string, typeof BLOCK_DEFINITIONS[string][]> = {};
@@ -293,7 +291,7 @@ export function Overlay() {
                 title={group}
               >
                 <span className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'hover:scale-105'}`}>
-                  {getCategoryIcon(group)}
+                  <CategoryIcon group={group} />
                 </span>
                 <span className="text-[8px] font-bold uppercase tracking-wider text-center truncate w-full">
                   {group}
@@ -775,7 +773,7 @@ export function Overlay() {
                       <span className="text-white/40">
                         SSP: {ship.bom.smallSteelParts || 0} • SH: {ship.bom.supportHardware || 0}
                         {ship.stats && Object.entries(ship.stats)
-                          .filter(([_, v]) => v > 0)
+                          .filter(([, v]) => v > 0)
                           .map(([k, v]) => {
                             const unit = STAT_METADATA[k]?.unit || '';
                             return ` • ${v}${unit}`;

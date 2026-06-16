@@ -104,7 +104,7 @@ export const StatIcon = ({ iconType }: { iconType?: string }) => {
     }
 };
 
-export const getCategoryIcon = (group: string) => {
+export const CategoryIcon = ({ group }: { group: string }) => {
     switch (group.toLowerCase()) {
         case 'steel':
             return (

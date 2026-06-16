@@ -7,7 +7,7 @@ export function serializeBlocks(blocks: BlockInstance[]): string {
     const rxIdx = Math.round(b.rotation[0] / (Math.PI / 2)) % 4;
     const ryIdx = Math.round(b.rotation[1] / (Math.PI / 2)) % 4;
     const rzIdx = Math.round(b.rotation[2] / (Math.PI / 2)) % 4;
-    const item: any[] = [
+    const item: (string | number)[] = [
       b.type,
       x,
       y,
@@ -42,20 +42,20 @@ export function deserializeBlocks(str: string): BlockInstance[] {
       base64 += '=';
     }
     const json = atob(base64);
-    const data = JSON.parse(json) as any[];
+    const data = JSON.parse(json) as (string | number)[][];
     
     return data.map(arr => {
       const [type, x, y, z, rxIdx, ryIdx, rzIdx, color] = arr;
       return {
         id: uuidv4(),
-        type,
-        position: [x, y, z],
+        type: type as string,
+        position: [x as number, y as number, z as number],
         rotation: [
-          (rxIdx || 0) * (Math.PI / 2),
-          (ryIdx || 0) * (Math.PI / 2),
-          (rzIdx || 0) * (Math.PI / 2)
+          ((rxIdx as number) || 0) * (Math.PI / 2),
+          ((ryIdx as number) || 0) * (Math.PI / 2),
+          ((rzIdx as number) || 0) * (Math.PI / 2)
         ],
-        ...(color ? { color } : {})
+        ...(color ? { color: color as string } : {})
       };
     });
   } catch (e) {
