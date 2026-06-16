@@ -125,14 +125,44 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     stats: { heatCapacity: 0, materialHeatConductivity: 0 }
   },
   */
-  cockpit_2x2x2: {
-    type: 'cockpit_2x2x2',
-    name: 'Cockpit Module',
+  cockpit_pathfinder: {
+    type: 'cockpit_pathfinder',
+    name: 'Pathfinder Cockpit',
     dimensions: [2, 2, 2],
     costs: undefined,
     color: '#2288ff',
-    group: 'Command',
-    plannerPartName: '',
-    stats: { heatCapacity: 0, heatInterface: 0 }
+    group: 'Cockpits',
+    plannerPartName: 'cockpit_ae_1',
+    stats: { systemSupport: 200, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 60 }
+  },
+  cockpit_brick: {
+    type: 'cockpit_brick',
+    name: 'Brick Cockpit',
+    dimensions: [2, 2, 2],
+    costs: undefined,
+    color: '#2288ff',
+    group: 'Cockpits',
+    plannerPartName: 'cockpit_tc_1',
+    stats: { systemSupport: 200, frame: 20, weight: 40, heatInterface: 60 }
+  },
+  cockpit_beaver: {
+    type: 'cockpit_beaver',
+    name: 'Beaver Cockpit',
+    dimensions: [2, 2, 2],
+    costs: undefined,
+    color: '#2288ff',
+    group: 'Cockpits',
+    plannerPartName: 'cockpit_mk_1',
+    stats: { systemSupport: 100, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 60, hullImpactDamage: -40 }
+  },
+  cockpit_cocoon: {
+    type: 'cockpit_cocoon',
+    name: 'Cocoon Cockpit',
+    dimensions: [2, 2, 2],
+    costs: undefined,
+    color: '#2288ff',
+    group: 'Cockpits',
+    plannerPartName: 'cockpit_da_1',
+    stats: { systemSupport: 100, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 40, hullImpactDamage: -40, heatDissipation: 300, heatGeneration: 4000 }
   }
 };
