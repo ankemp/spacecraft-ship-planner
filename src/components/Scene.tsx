@@ -18,7 +18,7 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
   const movingBlock = useShipStore(s => s.movingBlock);
   const cancelMoveBlock = useShipStore(s => s.cancelMoveBlock);
-  const rotateBlock = useShipStore(s => s.rotateBlock);
+  // const rotateBlock = useShipStore(s => s.rotateBlock);
   const setActiveTool = useShipStore(s => s.setActiveTool);
   const startMoveBlock = useShipStore(s => s.startMoveBlock);
   const removeBlock = useShipStore(s => s.removeBlock);
@@ -39,7 +39,7 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       const key = e.key.toLowerCase();
 
-      // Rotation
+      /*
       if (key === 'r') {
         if (selectedBlockId && !movingBlock) {
           rotateBlock(selectedBlockId, 'y');
@@ -59,6 +59,7 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
           setRotation(prev => [prev[0], prev[1], (prev[2] + Math.PI / 2) % (Math.PI * 2)]);
         }
       }
+      */
 
       // S key switches to Select Mode
       if (key === 's') {
@@ -144,7 +145,7 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
     setSelectedBlockId,
     removeBlock,
     nudgeBlock,
-    rotateBlock,
+    // rotateBlock,
     setRotation
   ]);
 
@@ -188,14 +189,14 @@ export function Scene() {
     }
 
     const point = e.point.clone();
-    
+
     // Convert local normal to world normal if it exists
     let normal = new THREE.Vector3(0, 1, 0);
     if (e.face?.normal) {
-        const normalMatrix = new THREE.Matrix3().getNormalMatrix(e.object.matrixWorld);
-        normal = e.face.normal.clone().applyMatrix3(normalMatrix).normalize();
+      const normalMatrix = new THREE.Matrix3().getNormalMatrix(e.object.matrixWorld);
+      normal = e.face.normal.clone().applyMatrix3(normalMatrix).normalize();
     }
-    
+
     // Add a tiny bit of the normal to the hit point to ensure we pick the adjacent cell
     const hitPoint = point.add(normal.multiplyScalar(0.1));
     const cx = Math.floor(hitPoint.x);
@@ -297,10 +298,10 @@ export function Scene() {
       <directionalLight position={[10, 20, 10]} intensity={1} castShadow />
       <Environment preset="city" />
 
-      <group 
-        onPointerDown={onPointerDown} 
-        onPointerMove={onPointerMove} 
-        onPointerOut={onPointerOut} 
+      <group
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerOut={onPointerOut}
         onClick={onClick}
         onContextMenu={onContextMenu}
       >

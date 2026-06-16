@@ -13,7 +13,7 @@ const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
     strokeLinecap="round"
     strokeLinejoin="round"
     className={`w-4 h-4 text-white/60 transition-transform duration-300 ${isOpen ? 'rotate-0' : '-rotate-90'
-    }`}
+      }`}
   >
     <polyline points="6 9 12 15 18 9" />
   </svg>
@@ -90,7 +90,7 @@ export function Overlay() {
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
   const nudgeBlock = useShipStore(s => s.nudgeBlock);
-  const rotateBlock = useShipStore(s => s.rotateBlock);
+  // const rotateBlock = useShipStore(s => s.rotateBlock);
   const removeBlock = useShipStore(s => s.removeBlock);
   const startMoveBlock = useShipStore(s => s.startMoveBlock);
 
@@ -101,13 +101,13 @@ export function Overlay() {
   const renameSavedShip = useShipStore(s => s.renameSavedShip);
 
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
-  
+
   // UI states for saved ships
   const [shipNameInput, setShipNameInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [editingShipId, setEditingShipId] = useState<string | null>(null);
   const [editingShipName, setEditingShipName] = useState('');
-  
+
   // Toast state
   const [toast, setToast] = useState<string | null>(null);
 
@@ -195,7 +195,7 @@ export function Overlay() {
 
   return (
     <div className="absolute inset-0 pointer-events-none p-6">
-      
+
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black/85 backdrop-blur-md px-5 py-3 rounded-full border border-blue-500/30 text-white font-medium text-xs flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-300">
@@ -207,13 +207,13 @@ export function Overlay() {
       )}
 
       {/* Left Panel: Palette */}
-      <div 
+      <div
         className={`absolute top-6 bottom-24 w-72 bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4 pointer-events-auto transition-all duration-300 ease-in-out select-none z-30 ${isPaletteOpen ? 'left-6 opacity-100' : '-left-80 opacity-0 pointer-events-none'
-        }`}
+          }`}
       >
         <div className="flex justify-between items-center border-b border-white/10 pb-2 flex-shrink-0">
           <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Block Palette</h2>
-          <button 
+          <button
             onClick={() => setIsPaletteOpen(false)}
             className="p-1 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors cursor-pointer"
             title="Hide Palette"
@@ -257,8 +257,8 @@ export function Overlay() {
                         setSelectedBlockId(null);
                       }}
                       className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer ${activeTool === def.type
-                          ? 'bg-blue-500/20 border-blue-400/50 scale-102'
-                          : 'bg-white/5 hover:bg-white/10 border-transparent hover:scale-101'
+                        ? 'bg-blue-500/20 border-blue-400/50 scale-102'
+                        : 'bg-white/5 hover:bg-white/10 border-transparent hover:scale-101'
                         } border text-left`}
                     >
                       <div className="w-8 h-8 rounded-md shadow-inner border border-white/20 flex-shrink-0" style={{ backgroundColor: def.color }} />
@@ -277,7 +277,7 @@ export function Overlay() {
 
       {/* Right Panel: BOM, Selected Block & Settings */}
       <div className="absolute top-6 right-6 bottom-6 w-72 flex flex-col gap-4 pointer-events-auto overflow-y-auto pr-1 select-none custom-scrollbar z-30">
-        
+
         {/* BOM Card */}
         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
           <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px] mb-4">Bill of Materials</h2>
@@ -418,8 +418,8 @@ export function Overlay() {
               </button>
 
               <div className="flex flex-col gap-1.5 mt-1">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Nudge / Rotate Block</span>
-                <div className="grid grid-cols-3 gap-1.5">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Nudge Block</span>
+                <div className="grid grid-cols-2 gap-1.5">
                   <button
                     onClick={() => nudgeBlock(selectedBlock.id, [-1, 0, 0])}
                     className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
@@ -434,13 +434,13 @@ export function Overlay() {
                   >
                     X+
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => rotateBlock(selectedBlock.id, 'x')}
                     className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
                     title="Rotate X (X Key)"
                   >
                     Rot X
-                  </button>
+                  </button> */}
 
                   <button
                     onClick={() => nudgeBlock(selectedBlock.id, [0, -1, 0])}
@@ -456,13 +456,13 @@ export function Overlay() {
                   >
                     Y+
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => rotateBlock(selectedBlock.id, 'y')}
                     className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
                     title="Rotate Y (R Key)"
                   >
                     Rot Y
-                  </button>
+                  </button> */}
 
                   <button
                     onClick={() => nudgeBlock(selectedBlock.id, [0, 0, -1])}
@@ -478,13 +478,13 @@ export function Overlay() {
                   >
                     Z+
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => rotateBlock(selectedBlock.id, 'z')}
                     className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
                     title="Rotate Z (Z Key)"
                   >
                     Rot Z
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
@@ -509,7 +509,7 @@ export function Overlay() {
         {/* Blueprint Storage Card */}
         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-3">
           <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Ship Storage</h2>
-          
+
           {/* Saved Ships List */}
           <div className="max-h-52 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
             {savedShips.length === 0 ? (
@@ -533,18 +533,18 @@ export function Overlay() {
                           }}
                           autoFocus
                         />
-                        <button 
-                          onClick={() => handleSaveRename(ship.id)} 
-                          className="p-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-400 rounded-md cursor-pointer" 
+                        <button
+                          onClick={() => handleSaveRename(ship.id)}
+                          className="p-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-400 rounded-md cursor-pointer"
                           title="Save"
                         >
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
                         </button>
-                        <button 
-                          onClick={() => setEditingShipId(null)} 
-                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-md cursor-pointer" 
+                        <button
+                          onClick={() => setEditingShipId(null)}
+                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-md cursor-pointer"
                           title="Cancel"
                         >
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -556,7 +556,7 @@ export function Overlay() {
                       <>
                         <span className="text-xs font-bold text-white truncate max-w-[150px]">{ship.name}</span>
                         <div className="flex items-center gap-1">
-                          <button 
+                          <button
                             onClick={() => {
                               setEditingShipId(ship.id);
                               setEditingShipName(ship.name);
@@ -568,7 +568,7 @@ export function Overlay() {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                             </svg>
                           </button>
-                          <button 
+                          <button
                             onClick={() => {
                               deleteSavedShip(ship.id);
                               showToast(`Deleted blueprint "${ship.name}"`);
@@ -599,7 +599,7 @@ export function Overlay() {
                         }).join('')}
                       </span>
                     </div>
-                    
+
                     {!editingShipId && (
                       <div className="flex items-center gap-1">
                         <button
@@ -685,13 +685,13 @@ export function Overlay() {
 
       {/* Bottom Panel: Floating Toolbar & Hotkeys Popover */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-auto flex flex-col items-center gap-3">
-        
+
         {/* Hotkeys Popover */}
         {showHotkeys && (
           <div className="bg-black/90 backdrop-blur-2xl border border-white/10 p-5 rounded-2xl w-80 text-xs text-white flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 select-none">
             <div className="flex justify-between items-center border-b border-white/10 pb-2">
               <span className="font-bold text-blue-400 uppercase tracking-wider text-[10px]">Controls & Hotkeys</span>
-              <button 
+              <button
                 onClick={() => setShowHotkeys(false)}
                 className="p-1 hover:bg-white/10 rounded text-white/50 hover:text-white cursor-pointer"
                 title="Close"
@@ -701,7 +701,7 @@ export function Overlay() {
                 </svg>
               </button>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-2.5 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
               <div className="flex justify-between items-center">
                 <span className="text-white/60">Place / Select Block</span>
@@ -711,10 +711,10 @@ export function Overlay() {
                 <span className="text-white/60">Delete Block</span>
                 <kbd className="bg-white/10 px-2 py-0.5 rounded text-white font-mono text-[10px] border border-white/20 shadow-inner">RMB / Del</kbd>
               </div>
-              <div className="flex justify-between items-center">
+              {/* <div className="flex justify-between items-center">
                 <span className="text-white/60">Rotate (Y / X / Z)</span>
                 <kbd className="bg-white/10 px-2 py-0.5 rounded text-white font-mono text-[10px] border border-white/20 shadow-inner">R / X / Z</kbd>
-              </div>
+              </div> */}
               <div className="flex justify-between items-center">
                 <span className="text-white/60">Select Mode</span>
                 <kbd className="bg-white/10 px-2 py-0.5 rounded text-white font-mono text-[10px] border border-white/20 shadow-inner">S</kbd>
@@ -741,14 +741,14 @@ export function Overlay() {
 
         {/* Floating Dock */}
         <div className="bg-black/75 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full flex items-center gap-2.5 h-12">
-          
+
           {/* Toggle Block Palette */}
           <button
             onClick={() => setIsPaletteOpen(!isPaletteOpen)}
             className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${isPaletteOpen
-                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' 
-                : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
-            }`}
+              ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
+              : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
+              }`}
             title="Toggle Block Palette"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -763,9 +763,9 @@ export function Overlay() {
               setSelectedBlockId(null);
             }}
             className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${activeTool === 'select'
-                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
-                : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
-            }`}
+              ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
+              : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
+              }`}
             title="Select & Move Mode (S)"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -778,8 +778,8 @@ export function Overlay() {
             <>
               <div className="h-5 w-[1px] bg-white/10" />
               <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/35 text-blue-300 text-xs font-semibold animate-in zoom-in-95 duration-200 max-w-[160px]">
-                <div 
-                  className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-inner flex-shrink-0" 
+                <div
+                  className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-inner flex-shrink-0"
                   style={{ backgroundColor: BLOCK_DEFINITIONS[activeTool]?.color }}
                 />
                 <span className="truncate">{BLOCK_DEFINITIONS[activeTool]?.name}</span>
@@ -805,9 +805,9 @@ export function Overlay() {
           <button
             onClick={() => setShowHotkeys(!showHotkeys)}
             className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${showHotkeys
-                ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
-                : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
-            }`}
+              ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
+              : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
+              }`}
             title="Toggle Controls Help"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
