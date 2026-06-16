@@ -154,6 +154,8 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
 export function Scene() {
   const blocks = useShipStore(s => s.blocks);
   const activeTool = useShipStore(s => s.activeTool);
+  const setActiveTool = useShipStore(s => s.setActiveTool);
+  const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
   const movingBlock = useShipStore(s => s.movingBlock);
 
@@ -179,6 +181,12 @@ export function Scene() {
 
   const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
+
+    // If we are in select mode and not moving a block, we don't need grid position calculation or updates
+    if (activeTool === 'select' && !movingBlock) {
+      return;
+    }
+
     const point = e.point.clone();
     
     // Convert local normal to world normal if it exists
@@ -198,6 +206,9 @@ export function Scene() {
   };
 
   const onPointerOut = () => {
+    if (activeTool === 'select' && !movingBlock) {
+      return;
+    }
     setCursorPos(null);
   };
 
@@ -255,9 +266,24 @@ export function Scene() {
 
   const onContextMenu = (e: ThreeEvent<MouseEvent>) => {
     e.nativeEvent.preventDefault();
+    e.stopPropagation();
+
+    if (pointerDownRef.current) {
+      const dx = e.nativeEvent.clientX - pointerDownRef.current.x;
+      const dy = e.nativeEvent.clientY - pointerDownRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      pointerDownRef.current = null;
+      if (distance > 5) return;
+    } else {
+      return;
+    }
+
     if (movingBlock) {
-      e.stopPropagation();
       cancelMoveBlock();
+    } else if (selectedBlockId) {
+      setSelectedBlockId(null);
+    } else if (activeTool !== 'select') {
+      setActiveTool('select');
     }
   };
 
@@ -293,7 +319,7 @@ export function Scene() {
       {/* Ghost Block */}
       {hoverPos && def && (
         <group position={hoverPos} rotation={rotation}>
-          <Box args={def.dimensions} position={[def.dimensions[0] / 2, def.dimensions[1] / 2, def.dimensions[2] / 2]}>
+          <Box raycast={() => null} args={def.dimensions} position={[def.dimensions[0] / 2, def.dimensions[1] / 2, def.dimensions[2] / 2]}>
             <meshStandardMaterial color={isInvalid ? '#ff0000' : def.color} transparent opacity={0.6} />
             <Edges color={isInvalid ? 'red' : 'white'} />
           </Box>
