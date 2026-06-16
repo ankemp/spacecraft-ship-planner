@@ -1,73 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useShipStore, selectBOM, selectStats } from '../store/shipStore';
 import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
-
-const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={`w-4 h-4 text-white/60 transition-transform duration-300 ${isOpen ? 'rotate-0' : '-rotate-90'
-      }`}
-  >
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-);
+import { getCategoryIcon, StatIcon } from './Icon';
 
 const formatStatKey = (key: string): string => {
   return key
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, str => str.toUpperCase());
-};
-
-const StatIcon = ({ iconType }: { iconType?: string }) => {
-  switch (iconType) {
-    case 'circuit-board':
-      return (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M9 9h6v6H9z" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M9 12H5m14 0h-4M12 9V5m0 14v-4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'shield':
-      return (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-        </svg>
-      );
-    case 'weight-hanging':
-      return (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a3 3 0 00-3 3v1h6V6a3 3 0 00-3-3zM5 8h14a1 1 0 011 1v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9a1 1 0 011-1z" />
-          <circle cx="12" cy="14" r="2" />
-        </svg>
-      );
-    case 'fire':
-      return (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      );
-    case 'interface':
-      return (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-        </svg>
-      );
-    default:
-      return (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
-        </svg>
-      );
-  }
 };
 
 export function Overlay() {
@@ -80,9 +20,29 @@ export function Overlay() {
   const blocks = useShipStore(s => s.blocks);
 
   const shipStats = selectStats({ blocks });
+  const totalWeight = shipStats.weight || 0;
+  const totalForce = shipStats.force || 0;
 
-  // Combine known metadata stats with any extra dynamic stats present on the ship
+  const DISPLAY_STAT_KEYS = [
+    'systemSupport',
+    'systemRequirements',
+    'hull',
+    'weight',
+    'thrust',
+    'force',
+    'powerConsumption',
+    'steeringStrength',
+    'heatCapacity',
+    'heatInterface',
+    'materialHeatConductivity',
+    'boostThrust',
+    'boostPowerConsumption',
+    'boostHeatGeneration',
+  ];
+
+  // Combine known metadata stats with any extra dynamic stats present on the ship, prioritizing DISPLAY_STAT_KEYS first
   const allStatKeys = Array.from(new Set([
+    ...DISPLAY_STAT_KEYS,
     ...Object.keys(STAT_METADATA),
     ...Object.keys(shipStats)
   ]));
@@ -93,6 +53,7 @@ export function Overlay() {
   // const rotateBlock = useShipStore(s => s.rotateBlock);
   const removeBlock = useShipStore(s => s.removeBlock);
   const startMoveBlock = useShipStore(s => s.startMoveBlock);
+  const updateBlockColor = useShipStore(s => s.updateBlockColor);
 
   // Long term storage hooks
   const savedShips = useShipStore(s => s.savedShips);
@@ -100,7 +61,8 @@ export function Overlay() {
   const deleteSavedShip = useShipStore(s => s.deleteSavedShip);
   const renameSavedShip = useShipStore(s => s.renameSavedShip);
 
-  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [isDetailPanelOpen, setIsDetailPanelOpen] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string>('');
 
   // UI states for saved ships
   const [shipNameInput, setShipNameInput] = useState('');
@@ -109,7 +71,8 @@ export function Overlay() {
   const [editingShipName, setEditingShipName] = useState('');
 
   // Toast state
-  const [toast, setToast] = useState<string | null>(null);
+  const toast = useShipStore(s => s.toast);
+  const setToast = useShipStore(s => s.setToast);
 
   // Redesigned UI states
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
@@ -125,14 +88,23 @@ export function Overlay() {
       setToast(null);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [toast]);
+  }, [toast, setToast]);
 
-  const toggleGroup = (group: string) => {
-    setCollapsedGroups(prev => ({
-      ...prev,
-      [group]: !prev[group]
-    }));
-  };
+  const lastActiveToolRef = useRef(activeTool);
+
+  // Sync category on active tool change
+  useEffect(() => {
+    if (activeTool !== lastActiveToolRef.current) {
+      lastActiveToolRef.current = activeTool;
+      if (activeTool && activeTool !== 'select') {
+        const def = BLOCK_DEFINITIONS[activeTool];
+        if (def && def.group && def.group !== activeCategory) {
+          setActiveCategory(def.group);
+          setIsDetailPanelOpen(true);
+        }
+      }
+    }
+  }, [activeTool, activeCategory]);
 
   // Group blocks by group property
   const groupedBlocks: Record<string, typeof BLOCK_DEFINITIONS[string][]> = {};
@@ -155,6 +127,8 @@ export function Overlay() {
     if (indexB !== -1) return 1;
     return a.localeCompare(b);
   });
+
+  const currentCategory = activeCategory || groupNames[0] || 'Steel';
 
   // Calculate spacecraftplanner.com export URL
   const partCounts: Record<string, number> = {};
@@ -206,17 +180,56 @@ export function Overlay() {
         </div>
       )}
 
-      {/* Left Panel: Palette */}
+      {/* Category Selector Bar */}
       <div
-        className={`absolute top-6 bottom-24 w-72 bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4 pointer-events-auto transition-all duration-300 ease-in-out select-none z-30 ${isPaletteOpen ? 'left-6 opacity-100' : '-left-80 opacity-0 pointer-events-none'
+        className={`absolute top-6 bottom-24 w-20 bg-black/60 backdrop-blur-xl py-4 px-2 rounded-2xl border border-white/10 flex flex-col items-center gap-3 pointer-events-auto transition-all duration-300 ease-in-out select-none z-30 ${isPaletteOpen ? 'left-6 opacity-100' : '-left-24 opacity-0 pointer-events-none'
           }`}
       >
-        <div className="flex justify-between items-center border-b border-white/10 pb-2 flex-shrink-0">
-          <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Block Palette</h2>
+        <div className="flex flex-col gap-3 w-full items-center">
+          {groupNames.map(group => {
+            const isActive = currentCategory === group;
+            return (
+              <button
+                key={group}
+                onClick={() => {
+                  if (isActive) {
+                    setIsDetailPanelOpen(!isDetailPanelOpen);
+                  } else {
+                    setActiveCategory(group);
+                    setIsDetailPanelOpen(true);
+                  }
+                }}
+                className={`w-16 h-18 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-200 border cursor-pointer ${isActive
+                  ? 'bg-blue-500/10 border-blue-500/40 text-blue-400 shadow-[0_0_12px_rgba(59,130,246,0.1)]'
+                  : 'bg-transparent border-transparent text-white/40 hover:text-white/80 hover:bg-white/5'
+                  }`}
+                title={group}
+              >
+                <span className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'hover:scale-105'}`}>
+                  {getCategoryIcon(group)}
+                </span>
+                <span className="text-[8px] font-bold uppercase tracking-wider text-center truncate w-full">
+                  {group}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Detail Panel */}
+      <div
+        className={`absolute top-6 bottom-24 w-72 bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4 pointer-events-auto transition-all duration-300 ease-in-out select-none z-20 ${isPaletteOpen && isDetailPanelOpen
+          ? 'left-[112px] opacity-100 scale-100'
+          : 'left-6 opacity-0 pointer-events-none scale-95'
+          }`}
+      >
+        <div className="flex justify-between items-center border-b border-white/10 pb-2.5 flex-shrink-0">
+          <h2 className="text-white font-bold uppercase tracking-widest text-xs">{currentCategory}</h2>
           <button
-            onClick={() => setIsPaletteOpen(false)}
+            onClick={() => setIsDetailPanelOpen(false)}
             className="p-1 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors cursor-pointer"
-            title="Hide Palette"
+            title="Collapse Panel"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -224,71 +237,62 @@ export function Overlay() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
-          {groupNames.map(group => {
-            const blocks = groupedBlocks[group];
-            const isCollapsed = collapsedGroups[group];
-            const isOpen = !isCollapsed;
-
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+          {(groupedBlocks[currentCategory] || []).map(def => {
+            const isActive = activeTool === def.type;
+            const isCockpit = def.group === 'Cockpits';
+            const hasCockpit = blocks.some(b => BLOCK_DEFINITIONS[b.type]?.group === 'Cockpits');
+            const isPaletteDisabled = isCockpit && hasCockpit;
             return (
-              <div key={group} className="flex flex-col gap-2 border-b border-white/5 last:border-0 pb-3 last:pb-0">
-                <button
-                  onClick={() => toggleGroup(group)}
-                  className="flex items-center justify-between w-full py-1.5 hover:opacity-80 transition-all text-left cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-white/80">{group}</span>
-                    <span className="text-[10px] font-semibold bg-white/10 text-white/50 px-1.5 py-0.5 rounded-full">
-                      {blocks.length}
-                    </span>
-                  </div>
-                  <ChevronIcon isOpen={isOpen} />
-                </button>
-
+              <button
+                key={def.type}
+                disabled={isPaletteDisabled}
+                onClick={() => {
+                  setActiveTool(def.type);
+                  setSelectedBlockId(null);
+                }}
+                className={`flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-200 w-full text-left border ${isActive
+                  ? 'bg-blue-500/10 border-blue-500/40 shadow-[0_0_12px_rgba(59,130,246,0.15)] scale-[1.02]'
+                  : isPaletteDisabled
+                    ? 'bg-white/1 opacity-30 border-white/5 cursor-not-allowed'
+                    : 'bg-white/2 hover:bg-white/6 border-white/5 hover:border-white/10 hover:scale-[1.01] cursor-pointer'
+                  }`}
+              >
                 <div
-                  className={`flex flex-col gap-2 overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100 mt-1' : 'max-h-0 opacity-0 pointer-events-none'
-                    }`}
-                >
-                  {blocks.map(def => (
-                    <button
-                      key={def.type}
-                      onClick={() => {
-                        setActiveTool(def.type);
-                        setSelectedBlockId(null);
-                      }}
-                      className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer ${activeTool === def.type
-                        ? 'bg-blue-500/20 border-blue-400/50 scale-102'
-                        : 'bg-white/5 hover:bg-white/10 border-transparent hover:scale-101'
-                        } border text-left`}
-                    >
-                      <div className="w-8 h-8 rounded-md shadow-inner border border-white/20 flex-shrink-0" style={{ backgroundColor: def.color }} />
-                      <div className="flex flex-col items-start min-w-0">
-                        <span className="text-xs font-semibold text-white/90 truncate w-full">{def.name}</span>
-                        <span className="text-[10px] text-white/50">{def.dimensions.join(' × ')} Units</span>
-                      </div>
-                    </button>
-                  ))}
+                  className="w-11 h-11 rounded-lg shadow-inner border border-white/15 flex-shrink-0 transition-transform duration-200"
+                  style={{ backgroundColor: def.color }}
+                />
+                <div className="flex flex-col items-start min-w-0 flex-1">
+                  <div className="flex justify-between items-center w-full gap-1.5">
+                    <span className="text-xs font-semibold text-white/90 truncate">{def.name}</span>
+                    {isPaletteDisabled && (
+                      <span className="text-[8px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20 font-bold uppercase tracking-wider flex-shrink-0">
+                        Max 1
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-white/40 mt-0.5">{def.dimensions.join(' × ')} Units</span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
       </div>
 
       {/* Right Panel: BOM, Selected Block & Settings */}
-      <div className="absolute top-6 right-6 bottom-6 w-72 flex flex-col gap-4 pointer-events-auto overflow-y-auto pr-1 select-none custom-scrollbar z-30">
+      <div className="absolute top-6 right-6 bottom-6 w-[350px] flex flex-col gap-4 pointer-events-auto overflow-y-auto pr-1 select-none custom-scrollbar z-30">
 
         {/* BOM Card */}
         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
           <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px] mb-4">Bill of Materials</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5">
-              <span className="text-sm text-white/80 font-medium">Small Steel Parts</span>
-              <span className="text-lg font-bold text-blue-400">{smallSteelParts}</span>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200 min-w-0">
+              <span className="text-white/40 text-[10px] uppercase font-bold tracking-wider truncate w-full">Small Steel Parts</span>
+              <span className="text-lg font-extrabold text-blue-400">{smallSteelParts}</span>
             </div>
-            <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5">
-              <span className="text-sm text-white/80 font-medium">Support Hardware</span>
-              <span className="text-lg font-bold text-orange-400">{supportHardware}</span>
+            <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200 min-w-0">
+              <span className="text-white/40 text-[10px] uppercase font-bold tracking-wider truncate w-full">Support Hardware</span>
+              <span className="text-lg font-extrabold text-orange-400">{supportHardware}</span>
             </div>
           </div>
 
@@ -344,7 +348,43 @@ export function Overlay() {
         {/* Spacecraft Stats Card */}
         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4">
           <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Specs</h2>
-          <div className="space-y-3">
+
+          {/* Flight Readiness Warning */}
+          {blocks.length > 0 && (
+            totalForce === 0 ? (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-amber-400">
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-bold">No Engines Installed</span>
+                  <span className="text-white/60 leading-normal">Your ship has no engines. Add thrusters from the Thrusters palette to enable movement.</span>
+                </div>
+              </div>
+            ) : totalForce <= totalWeight ? (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-red-400 animate-pulse">
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-bold">Insufficient Force</span>
+                  <span className="text-white/60 leading-normal">Total force ({totalForce.toFixed(1)}t) must be higher than total weight ({totalWeight.toFixed(1)}t). Add more thrusters or reduce weight.</span>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-emerald-400">
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-bold">Flight Capable</span>
+                  <span className="text-white/60 leading-normal">The ship has sufficient thrust to fly. Total force ({totalForce.toFixed(1)}t) exceeds weight ({totalWeight.toFixed(1)}t).</span>
+                </div>
+              </div>
+            )
+          )}
+
+          <div className="grid grid-cols-2 gap-2.5">
             {allStatKeys.map(key => {
               const value = shipStats[key] || 0;
               const meta = STAT_METADATA[key];
@@ -354,17 +394,17 @@ export function Overlay() {
               const icon = meta?.icon;
 
               return (
-                <div key={key} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/8 transition-all duration-200">
-                  <div className="flex items-center gap-2">
-                    <span className={`${colorClass} flex-shrink-0 opacity-80`}>
+                <div key={key} className="flex flex-col gap-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200 min-w-0">
+                  <div className="flex items-center gap-1.5 text-white/40 text-[10px] uppercase font-bold tracking-wider min-w-0">
+                    <span className={`${colorClass} flex-shrink-0`}>
                       <StatIcon iconType={icon} />
                     </span>
-                    <span className="text-sm text-white/80 font-medium">{name}</span>
+                    <span className="truncate w-full">{name}</span>
                   </div>
-                  <span className={`text-lg font-bold ${colorClass}`}>
-                    {value}
-                    {unit && <span className="text-[10px] font-normal text-white/50 ml-0.5">{unit}</span>}
-                  </span>
+                  <div className="text-lg font-extrabold text-white flex items-baseline gap-0.5">
+                    <span>{value}</span>
+                    {unit && <span className={`text-[10px] font-semibold ${colorClass} ml-0.5`}>{unit}</span>}
+                  </div>
                 </div>
               );
             })}
@@ -488,6 +528,27 @@ export function Overlay() {
                 </div>
               </div>
 
+              <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Block Color</span>
+                <div className="flex items-center gap-2">
+                  <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-all">
+                    <input
+                      type="color"
+                      value={selectedBlock.color || BLOCK_DEFINITIONS[selectedBlock.type]?.color || '#ffffff'}
+                      onChange={(e) => updateBlockColor(selectedBlock.id, e.target.value)}
+                      className="absolute inset-0 w-[200%] h-[200%] -translate-x-1/4 -translate-y-1/4 cursor-pointer"
+                    />
+                  </div>
+                  <button
+                    onClick={() => updateBlockColor(selectedBlock.id, undefined)}
+                    disabled={!selectedBlock.color}
+                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-white/5 text-[10px] text-white/80 hover:text-white border border-white/10 rounded-lg transition-all cursor-pointer font-semibold disabled:cursor-not-allowed"
+                  >
+                    Reset to Default
+                  </button>
+                </div>
+              </div>
+
               <div className="flex gap-2 mt-2 border-t border-white/10 pt-3">
                 <button
                   onClick={() => removeBlock(selectedBlock.id)}
@@ -593,10 +654,12 @@ export function Overlay() {
                       </span>
                       <span className="text-white/40">
                         SSP: {ship.bom.smallSteelParts || 0} • SH: {ship.bom.supportHardware || 0}
-                        {ship.stats && Object.entries(ship.stats).map(([k, v]) => {
-                          const unit = STAT_METADATA[k]?.unit || '';
-                          return ` • ${v}${unit}`;
-                        }).join('')}
+                        {ship.stats && Object.entries(ship.stats)
+                          .filter(([_, v]) => v > 0)
+                          .map(([k, v]) => {
+                            const unit = STAT_METADATA[k]?.unit || '';
+                            return ` • ${v}${unit}`;
+                          }).join('')}
                       </span>
                     </div>
 

@@ -7,7 +7,7 @@ export function serializeBlocks(blocks: BlockInstance[]): string {
     const rxIdx = Math.round(b.rotation[0] / (Math.PI / 2)) % 4;
     const ryIdx = Math.round(b.rotation[1] / (Math.PI / 2)) % 4;
     const rzIdx = Math.round(b.rotation[2] / (Math.PI / 2)) % 4;
-    return [
+    const item: any[] = [
       b.type,
       x,
       y,
@@ -16,6 +16,10 @@ export function serializeBlocks(blocks: BlockInstance[]): string {
       ryIdx,
       rzIdx
     ];
+    if (b.color) {
+      item.push(b.color);
+    }
+    return item;
   });
   
   try {
@@ -38,10 +42,10 @@ export function deserializeBlocks(str: string): BlockInstance[] {
       base64 += '=';
     }
     const json = atob(base64);
-    const data = JSON.parse(json) as [string, number, number, number, number, number, number][];
+    const data = JSON.parse(json) as any[];
     
     return data.map(arr => {
-      const [type, x, y, z, rxIdx, ryIdx, rzIdx] = arr;
+      const [type, x, y, z, rxIdx, ryIdx, rzIdx, color] = arr;
       return {
         id: uuidv4(),
         type,
@@ -50,7 +54,8 @@ export function deserializeBlocks(str: string): BlockInstance[] {
           (rxIdx || 0) * (Math.PI / 2),
           (ryIdx || 0) * (Math.PI / 2),
           (rzIdx || 0) * (Math.PI / 2)
-        ]
+        ],
+        ...(color ? { color } : {})
       };
     });
   } catch (e) {

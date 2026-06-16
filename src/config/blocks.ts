@@ -45,10 +45,58 @@ export const STAT_METADATA: Record<string, StatMetadata> = {
     icon: 'fire',
   },
   materialHeatConductivity: {
-    name: 'Heat Interface',
+    name: 'Material Heat Conductivity',
     unit: 'W/aK',
     color: 'text-orange-400',
     icon: 'interface',
+  },
+  systemRequirements: {
+    name: 'System Requirements',
+    unit: 'SP',
+    color: 'text-purple-400',
+    icon: 'circuit-board',
+  },
+  force: {
+    name: 'Force',
+    unit: 't',
+    color: 'text-indigo-400',
+    icon: 'force',
+  },
+  thrust: {
+    name: 'Thrust',
+    unit: 'kN',
+    color: 'text-red-400',
+    icon: 'thrust',
+  },
+  powerConsumption: {
+    name: 'Power Consumption',
+    unit: 'kW',
+    color: 'text-yellow-400',
+    icon: 'power',
+  },
+  steeringStrength: {
+    name: 'Steering Strength',
+    unit: 'kN',
+    color: 'text-cyan-400',
+    icon: 'steering',
+  },
+  boostThrust: {
+    name: 'Boost Thrust',
+    unit: 'kN',
+    color: 'text-pink-400',
+    icon: 'boost-thrust',
+  },
+  boostPowerConsumption: {
+    name: 'Boost Power Consumption',
+    unit: 'kW',
+    color: 'text-yellow-300',
+    icon: 'boost-power',
+  },
+  boostHeatGeneration: {
+    name: 'Boost Heat Generation',
+    unit: 'kW',
+    color: 'text-orange-500',
+    icon: 'boost-heat',
   },
 };
 
@@ -56,7 +104,7 @@ export const BLOCK_GROUP_ORDER: string[] = [
   'Steel',
   'Titanium',
   'Cockpits',
-  'Systems'
+  'Thrusters'
 ];
 
 export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
@@ -120,81 +168,166 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     plannerPartName: 'hull_mk_1_006',
     stats: { systemSupport: 192, frame: 0, weight: 0, hull: 0, heatCapacity: 40, materialHeatConductivity: 60 }
   },
-  titanium_4x3x1: {
-    type: 'titanium_4x3x1',
-    name: 'Titanium (4x3x1)',
-    dimensions: [4, 3, 1],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  titanium_4x3x2: {
-    type: 'titanium_4x3x2',
-    name: 'Titanium (4x3x2)',
-    dimensions: [4, 3, 2],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  titanium_6x3x1: {
-    type: 'titanium_6x3x1',
-    name: 'Titanium (6x3x1)',
-    dimensions: [6, 3, 1],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  titanium_6x3x2: {
-    type: 'titanium_6x3x2',
-    name: 'Titanium (6x3x2)',
-    dimensions: [6, 3, 2],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  titanium_8x3x1: {
-    type: 'titanium_8x3x1',
-    name: 'Titanium (8x3x1)',
-    dimensions: [8, 3, 1],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  titanium_8x3x2: {
-    type: 'titanium_8x3x2',
-    name: 'Titanium (8x3x2)',
-    dimensions: [8, 3, 2],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  titanium_8x6x2: {
-    type: 'titanium_8x6x2',
-    name: 'Titanium (8x6x2)',
-    dimensions: [8, 6, 2],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  titanium_12x6x2: {
-    type: 'titanium_12x6x2',
-    name: 'Titanium (12x6x2)',
-    dimensions: [12, 6, 2],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  titanium_16x6x2: {
-    type: 'titanium_16x6x2',
-    name: 'Titanium (16x6x2)',
-    dimensions: [16, 6, 2],
-    color: '#7a919e',
-    group: 'Titanium'
-  },
-  /*
-  thruster_1x1x1: {
-    type: 'thruster_1x1x1',
-    name: 'Small Thruster',
-    dimensions: [1, 1, 1],
-    costs: { smallSteelParts: 2, supportHardware: 5 },
-    color: '#ff5522',
-    group: 'Systems',
-    plannerPartName: 'thruster_mk_1',
-    stats: { heatCapacity: 0, materialHeatConductivity: 0 }
-  },
-  */
+  // titanium_4x3x1: {
+  //   type: 'titanium_4x3x1',
+  //   name: 'Titanium (4x3x1)',
+  //   dimensions: [4, 3, 1],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // titanium_4x3x2: {
+  //   type: 'titanium_4x3x2',
+  //   name: 'Titanium (4x3x2)',
+  //   dimensions: [4, 3, 2],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // titanium_6x3x1: {
+  //   type: 'titanium_6x3x1',
+  //   name: 'Titanium (6x3x1)',
+  //   dimensions: [6, 3, 1],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // titanium_6x3x2: {
+  //   type: 'titanium_6x3x2',
+  //   name: 'Titanium (6x3x2)',
+  //   dimensions: [6, 3, 2],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // titanium_8x3x1: {
+  //   type: 'titanium_8x3x1',
+  //   name: 'Titanium (8x3x1)',
+  //   dimensions: [8, 3, 1],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // titanium_8x3x2: {
+  //   type: 'titanium_8x3x2',
+  //   name: 'Titanium (8x3x2)',
+  //   dimensions: [8, 3, 2],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // titanium_8x6x2: {
+  //   type: 'titanium_8x6x2',
+  //   name: 'Titanium (8x6x2)',
+  //   dimensions: [8, 6, 2],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // titanium_12x6x2: {
+  //   type: 'titanium_12x6x2',
+  //   name: 'Titanium (12x6x2)',
+  //   dimensions: [12, 6, 2],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // titanium_16x6x2: {
+  //   type: 'titanium_16x6x2',
+  //   name: 'Titanium (16x6x2)',
+  //   dimensions: [16, 6, 2],
+  //   color: '#7a919e',
+  //   group: 'Titanium'
+  // },
+  // thruster_cart_pusher: {
+  //   type: 'thruster_cart_pusher',
+  //   name: 'Cart Pusher',
+  //   dimensions: [1, 1, 1],
+  //   color: '#d35400',
+  //   group: 'Thrusters',
+  //   stats: {
+  //     weight: 20,
+  //     systemRequirements: 300,
+  //     heatInterface: 0, // TODO
+  //     materialHeatConductivity: 60,
+  //     force: 300,
+  //     thrust: 50,
+  //     powerConsumption: 35,
+  //     steeringStrength: 8,
+  //     boostThrust: 100,
+  //     boostPowerConsumption: 100,
+  //     boostHeatGeneration: 1000
+  //   }
+  // },
+  // thruster_quiet_breeze: {
+  //   type: 'thruster_quiet_breeze',
+  //   name: 'Quiet Breeze',
+  //   dimensions: [1, 1, 1],
+  //   color: '#d35400',
+  //   group: 'Thrusters',
+  //   stats: {
+  //     weight: 20,
+  //     systemRequirements: 1000,
+  //     heatInterface: 0, // TODO
+  //     materialHeatConductivity: 60,
+  //     force: 700,
+  //     thrust: 60,
+  //     powerConsumption: 15,
+  //     steeringStrength: 15,
+  //   }
+  // },
+  // thruster_voidseeker: {
+  //   type: 'thruster_voidseeker',
+  //   name: 'Voidseeker',
+  //   dimensions: [1, 1, 1],
+  //   color: '#d35400',
+  //   group: 'Thrusters',
+  //   stats: {
+  //     weight: 20,
+  //     systemRequirements: 450,
+  //     heatInterface: 0, // TODO
+  //     materialHeatConductivity: 40,
+  //     force: 600,
+  //     thrust: 50,
+  //     powerConsumption: 70,
+  //     steeringStrength: 20,
+  //     boostThrust: 80,
+  //     boostPowerConsumption: 80,
+  //     boostHeatGeneration: 800
+  //   }
+  // },
+  // thruster_grasshopper: {
+  //   type: 'thruster_grasshopper',
+  //   name: 'Grasshopper',
+  //   dimensions: [1, 1, 1],
+  //   color: '#d35400',
+  //   group: 'Thrusters',
+  //   stats: {
+  //     weight: 20,
+  //     systemRequirements: 600,
+  //     heatInterface: 0, // TODO
+  //     materialHeatConductivity: 120,
+  //     force: 600,
+  //     thrust: 100,
+  //     powerConsumption: 80,
+  //     steeringStrength: 15,
+  //     boostThrust: 150,
+  //     boostPowerConsumption: 150,
+  //     heatDissipation: 50
+  //   }
+  // },
+  // thruster_silent: {
+  //   type: 'thruster_silent',
+  //   name: 'Silent Thruster',
+  //   dimensions: [1, 1, 1],
+  //   color: '#d35400',
+  //   group: 'Thrusters',
+  //   stats: {
+  //     weight: 20,
+  //     systemRequirements: 1100,
+  //     heatInterface: 0, // TODO
+  //     materialHeatConductivity: 0, // TODO
+  //     force: 1250,
+  //     thrust: 150,
+  //     powerConsumption: 80,
+  //     steeringStrength: 30,
+  //     boostThrust: 200,
+  //     boostPowerConsumption: 150,
+  //     boostHeatGeneration: 500
+  //   }
+  // },
   cockpit_pathfinder: {
     type: 'cockpit_pathfinder',
     name: 'Pathfinder Cockpit',

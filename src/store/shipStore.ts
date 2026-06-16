@@ -9,6 +9,7 @@ export interface BlockInstance {
   type: string;
   position: [number, number, number]; // Grid coords of the minimum corner
   rotation: [number, number, number]; // Euler angles in radians
+  color?: string;
 }
 
 export interface BlockBounds {
@@ -39,6 +40,8 @@ interface ShipStore {
   selectedBlockId: string | null;
   movingBlock: BlockInstance | null;
   savedShips: SavedShip[];
+  toast: string | null;
+  setToast: (toast: string | null) => void;
   setBlocks: (blocks: BlockInstance[]) => void;
   setActiveTool: (type: string) => void;
   setSelectedBlockId: (id: string | null) => void;
@@ -55,6 +58,7 @@ interface ShipStore {
   saveCurrentShip: (name: string) => void;
   deleteSavedShip: (id: string) => void;
   renameSavedShip: (id: string, name: string) => void;
+  updateBlockColor: (id: string, color: string | undefined) => void;
 }
 
 export function getBlockBounds(type: string, position: [number, number, number], rotation: [number, number, number]): BlockBounds {
@@ -178,6 +182,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   selectedBlockId: null,
   movingBlock: null,
   savedShips: getInitialSavedShips(),
+  toast: null,
 
   setBlocks: (blocks) => {
     set({ blocks, selectedBlockId: null, movingBlock: null });
@@ -186,6 +191,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   setActiveTool: (type) => set({ activeTool: type }),
   setSelectedBlockId: (id) => set({ selectedBlockId: id }),
   setMovingBlock: (block) => set({ movingBlock: block }),
+  setToast: (toast) => set({ toast }),
 
   checkCollision: (type, position, rotation) => {
     const { blocks } = get();
@@ -212,6 +218,15 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       return false; // Collision detected
     }
 
+    const blockDef = BLOCK_DEFINITIONS[type];
+    if (blockDef && blockDef.group === 'Cockpits') {
+      const hasCockpit = blocks.some(b => BLOCK_DEFINITIONS[b.type]?.group === 'Cockpits');
+      if (hasCockpit) {
+        set({ toast: 'Only one cockpit is allowed per ship!' });
+        return false;
+      }
+    }
+
     const newBlock: BlockInstance = {
       id: uuidv4(),
       type,
@@ -220,7 +235,11 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     };
 
     const nextBlocks = [...blocks, newBlock];
-    set({ blocks: nextBlocks });
+    const updatedState: Partial<ShipStore> = { blocks: nextBlocks };
+    if (blockDef && blockDef.group === 'Cockpits') {
+      updatedState.activeTool = 'select';
+    }
+    set(updatedState);
     saveAutosave(nextBlocks);
     return true;
   },
@@ -260,6 +279,15 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     
     if (checkCollision(movingBlock.type, position, rotation)) {
       return false;
+    }
+
+    const blockDef = BLOCK_DEFINITIONS[movingBlock.type];
+    if (blockDef && blockDef.group === 'Cockpits') {
+      const hasCockpit = blocks.some(b => b.id !== movingBlock.id && BLOCK_DEFINITIONS[b.type]?.group === 'Cockpits');
+      if (hasCockpit) {
+        set({ toast: 'Only one cockpit is allowed per ship!' });
+        return false;
+      }
     }
     
     const placedBlock: BlockInstance = {
@@ -412,6 +440,13 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       localStorage.setItem('spacecraft_shipbuilder_saved_ships', JSON.stringify(updated));
       return { savedShips: updated };
     });
+  },
+
+  updateBlockColor: (id, color) => {
+    const { blocks } = get();
+    const nextBlocks = blocks.map(b => b.id === id ? { ...b, color } : b);
+    set({ blocks: nextBlocks });
+    saveAutosave(nextBlocks);
   }
 }));
 

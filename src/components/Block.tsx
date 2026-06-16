@@ -9,9 +9,10 @@ interface BlockProps {
   type: string;
   position: [number, number, number];
   rotation: [number, number, number];
+  color?: string;
 }
 
-export const Block = memo(function Block({ id, type, position, rotation }: BlockProps) {
+export const Block = memo(function Block({ id, type, position, rotation, color }: BlockProps) {
   const def = BLOCK_DEFINITIONS[type];
   const removeBlock = useShipStore(s => s.removeBlock);
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
@@ -114,7 +115,7 @@ export const Block = memo(function Block({ id, type, position, rotation }: Block
           }
         }}
       >
-        <meshStandardMaterial color={def.color} />
+        <meshStandardMaterial color={color || def.color} />
         <Edges color={isSelected ? '#ffaa00' : (isHovered ? '#3b82f6' : 'black')} />
       </Box>
 
