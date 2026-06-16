@@ -1,11 +1,20 @@
+import type { RequireExactlyOne } from 'type-fest';
+
+type BlockMaterialCosts = {
+  smallSteelParts?: number;
+  smallTitaniumParts?: number;
+  titaniumParts?: number;
+};
+
+type BlockCosts = {
+  supportHardware: number;
+} & RequireExactlyOne<BlockMaterialCosts>;
+
 export interface BlockDefinition {
   type: string;
   name: string;
   dimensions: [number, number, number]; // x, y, z grid size
-  costs?: {
-    smallSteelParts?: number;
-    supportHardware?: number;
-  };
+  costs?: BlockCosts;
   color: string;
   group: string;
   plannerPartName?: string;
@@ -168,69 +177,96 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     plannerPartName: 'hull_mk_1_006',
     stats: { systemSupport: 192, frame: 0, weight: 0, hull: 0, heatCapacity: 40, materialHeatConductivity: 60 }
   },
-  // titanium_4x3x1: {
-  //   type: 'titanium_4x3x1',
-  //   name: 'Titanium (4x3x1)',
-  //   dimensions: [4, 3, 1],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
-  // titanium_4x3x2: {
-  //   type: 'titanium_4x3x2',
-  //   name: 'Titanium (4x3x2)',
-  //   dimensions: [4, 3, 2],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
-  // titanium_6x3x1: {
-  //   type: 'titanium_6x3x1',
-  //   name: 'Titanium (6x3x1)',
-  //   dimensions: [6, 3, 1],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
-  // titanium_6x3x2: {
-  //   type: 'titanium_6x3x2',
-  //   name: 'Titanium (6x3x2)',
-  //   dimensions: [6, 3, 2],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
-  // titanium_8x3x1: {
-  //   type: 'titanium_8x3x1',
-  //   name: 'Titanium (8x3x1)',
-  //   dimensions: [8, 3, 1],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
-  // titanium_8x3x2: {
-  //   type: 'titanium_8x3x2',
-  //   name: 'Titanium (8x3x2)',
-  //   dimensions: [8, 3, 2],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
-  // titanium_8x6x2: {
-  //   type: 'titanium_8x6x2',
-  //   name: 'Titanium (8x6x2)',
-  //   dimensions: [8, 6, 2],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
-  // titanium_12x6x2: {
-  //   type: 'titanium_12x6x2',
-  //   name: 'Titanium (12x6x2)',
-  //   dimensions: [12, 6, 2],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
-  // titanium_16x6x2: {
-  //   type: 'titanium_16x6x2',
-  //   name: 'Titanium (16x6x2)',
-  //   dimensions: [16, 6, 2],
-  //   color: '#7a919e',
-  //   group: 'Titanium'
-  // },
+  titanium_4x3x1: {
+    type: 'titanium_4x3x1',
+    name: 'Titanium (4x3x1)',
+    dimensions: [4, 3, 1],
+    costs: { smallTitaniumParts: 2, supportHardware: 2 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_1_004_tit',
+    stats: { systemSupport: 96, frame: 40, weight: 16, hull: 10, heatCapacity: 22, materialHeatConductivity: 60 }
+  },
+  titanium_4x3x2: {
+    type: 'titanium_4x3x2',
+    name: 'Titanium (4x3x2)',
+    dimensions: [4, 3, 2],
+    costs: { smallTitaniumParts: 2, supportHardware: 4 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_1_001_tit',
+    stats: { systemSupport: 240, frame: 36, weight: 24, hull: 15, heatCapacity: 33, materialHeatConductivity: 60 }
+  },
+  titanium_6x3x1: {
+    type: 'titanium_6x3x1',
+    name: 'Titanium (6x3x1)',
+    dimensions: [6, 3, 1],
+    costs: { smallTitaniumParts: 3, supportHardware: 3 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_1_005_tit',
+    stats: { systemSupport: 144, frame: 60, weight: 24, hull: 15, heatCapacity: 33, materialHeatConductivity: 60 }
+  },
+  titanium_6x3x2: {
+    type: 'titanium_6x3x2',
+    name: 'Titanium (6x3x2)',
+    dimensions: [6, 3, 2],
+    costs: { smallTitaniumParts: 3, supportHardware: 6 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_1_002_tit',
+    stats: { systemSupport: 360, frame: 54, weight: 36, hull: 22.5, heatCapacity: 49.5, materialHeatConductivity: 60 }
+  },
+  titanium_8x3x1: {
+    type: 'titanium_8x3x1',
+    name: 'Titanium (8x3x1)',
+    dimensions: [8, 3, 1],
+    costs: { smallTitaniumParts: 4, supportHardware: 4 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_1_006_tit',
+    stats: { systemSupport: 192, frame: 80, weight: 32, hull: 20, heatCapacity: 44, materialHeatConductivity: 60 }
+  },
+  titanium_8x3x2: {
+    type: 'titanium_8x3x2',
+    name: 'Titanium (8x3x2)',
+    dimensions: [8, 3, 2],
+    costs: { smallTitaniumParts: 4, supportHardware: 8 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_1_003_tit',
+    stats: { systemSupport: 480, frame: 72, weight: 48, hull: 30, heatCapacity: 66, materialHeatConductivity: 60 }
+  },
+  titanium_8x6x2: {
+    type: 'titanium_8x6x2',
+    name: 'Titanium (8x6x2)',
+    dimensions: [8, 6, 2],
+    costs: { titaniumParts: 4, supportHardware: 8 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_2_004_tit',
+    stats: { systemSupport: 480, frame: 256, weight: 64, hull: 20, heatCapacity: 88, materialHeatConductivity: 60 }
+  },
+  titanium_12x6x2: {
+    type: 'titanium_12x6x2',
+    name: 'Titanium (12x6x2)',
+    dimensions: [12, 6, 2],
+    costs: { titaniumParts: 3, supportHardware: 12 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_2_005_tit',
+    stats: { systemSupport: 720, frame: 384, weight: 96, hull: 30, heatCapacity: 132, materialHeatConductivity: 60 }
+  },
+  titanium_16x6x2: {
+    type: 'titanium_16x6x2',
+    name: 'Titanium (16x6x2)',
+    dimensions: [16, 6, 2],
+    costs: { titaniumParts: 4, supportHardware: 16 },
+    color: '#7a919e',
+    group: 'Titanium',
+    plannerPartName: 'hull_mk_2_006_tit',
+    stats: { systemSupport: 960, frame: 512, weight: 128, hull: 40, heatCapacity: 176, materialHeatConductivity: 60 }
+  },
   // thruster_cart_pusher: {
   //   type: 'thruster_cart_pusher',
   //   name: 'Cart Pusher',
