@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useShipStore, selectBOM, selectStats } from '../store/shipStore';
-import { BLOCK_DEFINITIONS, STAT_METADATA } from '../config/blocks';
+import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
 
 const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
@@ -144,10 +144,15 @@ export function Overlay() {
     groupedBlocks[group].push(def);
   });
 
-  // Sort groups: Steel first, then alphabetical
+  // Sort groups based on defined BLOCK_GROUP_ORDER, then alphabetically
   const groupNames = Object.keys(groupedBlocks).sort((a, b) => {
-    if (a === 'Steel') return -1;
-    if (b === 'Steel') return 1;
+    const indexA = BLOCK_GROUP_ORDER.indexOf(a);
+    const indexB = BLOCK_GROUP_ORDER.indexOf(b);
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
     return a.localeCompare(b);
   });
 

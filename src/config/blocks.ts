@@ -52,6 +52,13 @@ export const STAT_METADATA: Record<string, StatMetadata> = {
   },
 };
 
+export const BLOCK_GROUP_ORDER: string[] = [
+  'Steel',
+  'Titanium',
+  'Cockpits',
+  'Systems'
+];
+
 export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   steel_4x3x2: {
     type: 'steel_4x3x2',
@@ -112,6 +119,69 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     group: 'Steel',
     plannerPartName: 'hull_mk_1_006',
     stats: { systemSupport: 192, frame: 0, weight: 0, hull: 0, heatCapacity: 40, materialHeatConductivity: 60 }
+  },
+  titanium_4x3x1: {
+    type: 'titanium_4x3x1',
+    name: 'Titanium (4x3x1)',
+    dimensions: [4, 3, 1],
+    color: '#7a919e',
+    group: 'Titanium'
+  },
+  titanium_4x3x2: {
+    type: 'titanium_4x3x2',
+    name: 'Titanium (4x3x2)',
+    dimensions: [4, 3, 2],
+    color: '#7a919e',
+    group: 'Titanium'
+  },
+  titanium_6x3x1: {
+    type: 'titanium_6x3x1',
+    name: 'Titanium (6x3x1)',
+    dimensions: [6, 3, 1],
+    color: '#7a919e',
+    group: 'Titanium'
+  },
+  titanium_6x3x2: {
+    type: 'titanium_6x3x2',
+    name: 'Titanium (6x3x2)',
+    dimensions: [6, 3, 2],
+    color: '#7a919e',
+    group: 'Titanium'
+  },
+  titanium_8x3x1: {
+    type: 'titanium_8x3x1',
+    name: 'Titanium (8x3x1)',
+    dimensions: [8, 3, 1],
+    color: '#7a919e',
+    group: 'Titanium'
+  },
+  titanium_8x3x2: {
+    type: 'titanium_8x3x2',
+    name: 'Titanium (8x3x2)',
+    dimensions: [8, 3, 2],
+    color: '#7a919e',
+    group: 'Titanium'
+  },
+  titanium_8x6x2: {
+    type: 'titanium_8x6x2',
+    name: 'Titanium (8x6x2)',
+    dimensions: [8, 6, 2],
+    color: '#7a919e',
+    group: 'Titanium'
+  },
+  titanium_12x6x2: {
+    type: 'titanium_12x6x2',
+    name: 'Titanium (12x6x2)',
+    dimensions: [12, 6, 2],
+    color: '#7a919e',
+    group: 'Titanium'
+  },
+  titanium_16x6x2: {
+    type: 'titanium_16x6x2',
+    name: 'Titanium (16x6x2)',
+    dimensions: [16, 6, 2],
+    color: '#7a919e',
+    group: 'Titanium'
   },
   /*
   thruster_1x1x1: {
