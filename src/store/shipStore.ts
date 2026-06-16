@@ -29,6 +29,7 @@ export interface SavedShip {
     smallSteelParts: number;
     supportHardware: number;
   };
+  stats: Record<string, number>;
   createdAt: number;
 }
 
@@ -376,6 +377,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   saveCurrentShip: (name) => {
     const { blocks } = get();
     const bom = selectBOM({ blocks });
+    const stats = selectStats({ blocks });
     
     const newShip: SavedShip = {
       id: uuidv4(),
@@ -383,6 +385,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       blocks: JSON.parse(JSON.stringify(blocks)),
       totalBlocks: blocks.length,
       bom,
+      stats,
       createdAt: Date.now()
     };
 
@@ -425,4 +428,19 @@ export const selectBOM = (state: ShipStore | { blocks: BlockInstance[] }) => {
   });
 
   return { smallSteelParts, supportHardware };
+};
+
+export const selectStats = (state: ShipStore | { blocks: BlockInstance[] }) => {
+  const totals: Record<string, number> = {};
+
+  state.blocks.forEach(b => {
+    const def = BLOCK_DEFINITIONS[b.type];
+    if (def && def.stats) {
+      Object.entries(def.stats).forEach(([statName, value]) => {
+        totals[statName] = (totals[statName] || 0) + value;
+      });
+    }
+  });
+
+  return totals;
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useShipStore, selectBOM } from '../store/shipStore';
-import { BLOCK_DEFINITIONS } from '../config/blocks';
+import { useShipStore, selectBOM, selectStats } from '../store/shipStore';
+import { BLOCK_DEFINITIONS, STAT_METADATA } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
 
 const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
@@ -12,13 +12,63 @@ const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
     strokeWidth="2.5"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={`w-4 h-4 text-white/60 transition-transform duration-300 ${
-      isOpen ? 'rotate-0' : '-rotate-90'
+    className={`w-4 h-4 text-white/60 transition-transform duration-300 ${isOpen ? 'rotate-0' : '-rotate-90'
     }`}
   >
     <polyline points="6 9 12 15 18 9" />
   </svg>
 );
+
+const formatStatKey = (key: string): string => {
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, str => str.toUpperCase());
+};
+
+const StatIcon = ({ iconType }: { iconType?: string }) => {
+  switch (iconType) {
+    case 'circuit-board':
+      return (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9 9h6v6H9z" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9 12H5m14 0h-4M12 9V5m0 14v-4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'shield':
+      return (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+        </svg>
+      );
+    case 'weight-hanging':
+      return (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a3 3 0 00-3 3v1h6V6a3 3 0 00-3-3zM5 8h14a1 1 0 011 1v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9a1 1 0 011-1z" />
+          <circle cx="12" cy="14" r="2" />
+        </svg>
+      );
+    case 'fire':
+      return (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      );
+    case 'interface':
+      return (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+        </svg>
+      );
+  }
+};
 
 export function Overlay() {
   const activeTool = useShipStore(s => s.activeTool);
@@ -28,6 +78,14 @@ export function Overlay() {
   const smallSteelParts = useShipStore(s => selectBOM(s).smallSteelParts);
   const supportHardware = useShipStore(s => selectBOM(s).supportHardware);
   const blocks = useShipStore(s => s.blocks);
+
+  const shipStats = selectStats({ blocks });
+
+  // Combine known metadata stats with any extra dynamic stats present on the ship
+  const allStatKeys = Array.from(new Set([
+    ...Object.keys(STAT_METADATA),
+    ...Object.keys(shipStats)
+  ]));
 
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
@@ -145,8 +203,7 @@ export function Overlay() {
 
       {/* Left Panel: Palette */}
       <div 
-        className={`absolute top-6 bottom-24 w-72 bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4 pointer-events-auto transition-all duration-300 ease-in-out select-none z-30 ${
-          isPaletteOpen ? 'left-6 opacity-100' : '-left-80 opacity-0 pointer-events-none'
+        className={`absolute top-6 bottom-24 w-72 bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4 pointer-events-auto transition-all duration-300 ease-in-out select-none z-30 ${isPaletteOpen ? 'left-6 opacity-100' : '-left-80 opacity-0 pointer-events-none'
         }`}
       >
         <div className="flex justify-between items-center border-b border-white/10 pb-2 flex-shrink-0">
@@ -276,6 +333,36 @@ export function Overlay() {
             <button onClick={clearShip} className="flex-1 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-bold transition-colors border border-red-500/20 cursor-pointer">
               Clear Ship
             </button>
+          </div>
+        </div>
+
+        {/* Spacecraft Stats Card */}
+        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4">
+          <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Specs</h2>
+          <div className="space-y-3">
+            {allStatKeys.map(key => {
+              const value = shipStats[key] || 0;
+              const meta = STAT_METADATA[key];
+              const name = meta?.name || formatStatKey(key);
+              const unit = meta?.unit || '';
+              const colorClass = meta?.color || 'text-blue-400';
+              const icon = meta?.icon;
+
+              return (
+                <div key={key} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/8 transition-all duration-200">
+                  <div className="flex items-center gap-2">
+                    <span className={`${colorClass} flex-shrink-0 opacity-80`}>
+                      <StatIcon iconType={icon} />
+                    </span>
+                    <span className="text-sm text-white/80 font-medium">{name}</span>
+                  </div>
+                  <span className={`text-lg font-bold ${colorClass}`}>
+                    {value}
+                    {unit && <span className="text-[10px] font-normal text-white/50 ml-0.5">{unit}</span>}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -501,6 +588,10 @@ export function Overlay() {
                       </span>
                       <span className="text-white/40">
                         SSP: {ship.bom.smallSteelParts || 0} • SH: {ship.bom.supportHardware || 0}
+                        {ship.stats && Object.entries(ship.stats).map(([k, v]) => {
+                          const unit = STAT_METADATA[k]?.unit || '';
+                          return ` • ${v}${unit}`;
+                        }).join('')}
                       </span>
                     </div>
                     
@@ -649,8 +740,7 @@ export function Overlay() {
           {/* Toggle Block Palette */}
           <button
             onClick={() => setIsPaletteOpen(!isPaletteOpen)}
-            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${
-              isPaletteOpen 
+            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${isPaletteOpen
                 ? 'bg-blue-500/20 text-blue-400 border-blue-400/30' 
                 : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
             }`}
@@ -667,8 +757,7 @@ export function Overlay() {
               setActiveTool('select');
               setSelectedBlockId(null);
             }}
-            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${
-              activeTool === 'select'
+            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${activeTool === 'select'
                 ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
                 : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
             }`}
@@ -710,8 +799,7 @@ export function Overlay() {
           {/* Help / Hotkeys Toggle */}
           <button
             onClick={() => setShowHotkeys(!showHotkeys)}
-            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${
-              showHotkeys
+            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${showHotkeys
                 ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
                 : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
             }`}
