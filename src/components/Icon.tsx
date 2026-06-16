@@ -143,3 +143,14 @@ export const getCategoryIcon = (group: string) => {
             );
     }
 };
+
+export const GripIcon = () => (
+    <svg className="w-3 h-3 text-white/30 hover:text-white/60 cursor-grab" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="8" cy="6" r="2" />
+        <circle cx="16" cy="6" r="2" />
+        <circle cx="8" cy="12" r="2" />
+        <circle cx="16" cy="12" r="2" />
+        <circle cx="8" cy="18" r="2" />
+        <circle cx="16" cy="18" r="2" />
+    </svg>
+);

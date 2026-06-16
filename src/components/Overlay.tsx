@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useShipStore, selectBOM, selectStats } from '../store/shipStore';
 import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
-import { getCategoryIcon, StatIcon } from './Icon';
+import { getCategoryIcon, GripIcon, StatIcon } from './Icon';
 
 const formatStatKey = (key: string): string => {
   return key
@@ -41,11 +41,98 @@ export function Overlay() {
   ];
 
   // Combine known metadata stats with any extra dynamic stats present on the ship, prioritizing DISPLAY_STAT_KEYS first
-  const allStatKeys = Array.from(new Set([
+  const baseStatKeys = Array.from(new Set([
     ...DISPLAY_STAT_KEYS,
     ...Object.keys(STAT_METADATA),
     ...Object.keys(shipStats)
   ]));
+
+  const [customOrder, setCustomOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('spacecraft_shipbuilder_specs_order');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error('Failed to parse custom specs order', e);
+      return [];
+    }
+  });
+
+  const allStatKeys = [...baseStatKeys];
+  if (customOrder.length > 0) {
+    allStatKeys.sort((a, b) => {
+      const indexA = customOrder.indexOf(a);
+      const indexB = customOrder.indexOf(b);
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return baseStatKeys.indexOf(a) - baseStatKeys.indexOf(b);
+    });
+  }
+
+  const [draggedKey, setDraggedKey] = useState<string | null>(null);
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const draggedKeyRef = useRef<string | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, key: string) => {
+    e.dataTransfer.setData('text/plain', key);
+    e.dataTransfer.effectAllowed = 'move';
+    draggedKeyRef.current = key;
+    setTimeout(() => {
+      setDraggedKey(key);
+    }, 0);
+  };
+
+  const handleDragEnter = (e: React.DragEvent, key: string) => {
+    e.preventDefault();
+    if (draggedKeyRef.current && draggedKeyRef.current !== key) {
+      setDragOverKey(key);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDragLeave = (_e: React.DragEvent, key: string) => {
+    if (dragOverKey === key) {
+      setDragOverKey(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetKey: string) => {
+    e.preventDefault();
+    const sourceKey = draggedKeyRef.current;
+    if (!sourceKey || sourceKey === targetKey) return;
+
+    const currentKeys = [...allStatKeys];
+    const dragIndex = currentKeys.indexOf(sourceKey);
+    const targetIndex = currentKeys.indexOf(targetKey);
+
+    if (dragIndex !== -1 && targetIndex !== -1) {
+      currentKeys.splice(dragIndex, 1);
+      currentKeys.splice(targetIndex, 0, sourceKey);
+
+      setCustomOrder(currentKeys);
+      localStorage.setItem('spacecraft_shipbuilder_specs_order', JSON.stringify(currentKeys));
+    }
+
+    draggedKeyRef.current = null;
+    setDraggedKey(null);
+    setDragOverKey(null);
+  };
+
+  const handleDragEnd = () => {
+    draggedKeyRef.current = null;
+    setDraggedKey(null);
+    setDragOverKey(null);
+  };
+
+  const resetToDefaultOrder = () => {
+    setCustomOrder([]);
+    localStorage.removeItem('spacecraft_shipbuilder_specs_order');
+  };
 
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
@@ -347,7 +434,17 @@ export function Overlay() {
 
         {/* Spacecraft Stats Card */}
         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4">
-          <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Specs</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Specs</h2>
+            {customOrder.length > 0 && (
+              <button
+                onClick={resetToDefaultOrder}
+                className="text-[10px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider cursor-pointer transition-colors"
+              >
+                Reset Order
+              </button>
+            )}
+          </div>
 
           {/* Flight Readiness Warning */}
           {blocks.length > 0 && (
@@ -393,15 +490,38 @@ export function Overlay() {
               const colorClass = meta?.color || 'text-blue-400';
               const icon = meta?.icon;
 
+              const isDragging = draggedKey === key;
+              const isDragOver = dragOverKey === key;
+
               return (
-                <div key={key} className="flex flex-col gap-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200 min-w-0">
-                  <div className="flex items-center gap-1.5 text-white/40 text-[10px] uppercase font-bold tracking-wider min-w-0">
-                    <span className={`${colorClass} flex-shrink-0`}>
-                      <StatIcon iconType={icon} />
-                    </span>
-                    <span className="truncate w-full">{name}</span>
+                <div
+                  key={key}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, key)}
+                  onDragEnter={(e) => handleDragEnter(e, key)}
+                  onDragOver={handleDragOver}
+                  onDragLeave={(e) => handleDragLeave(e, key)}
+                  onDrop={(e) => handleDrop(e, key)}
+                  onDragEnd={handleDragEnd}
+                  className={`group flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200 min-w-0 cursor-grab active:cursor-grabbing select-none relative ${isDragging
+                    ? 'opacity-30 border border-blue-500/30 bg-white/[0.01]'
+                    : isDragOver
+                      ? 'bg-blue-500/10 border border-blue-500 scale-[1.02] shadow-[0_0_15px_rgba(59,130,246,0.3)] z-10'
+                      : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10'
+                    }`}
+                >
+                  <div className="flex items-center justify-between gap-1.5 min-w-0 pointer-events-none">
+                    <div className="flex items-center gap-1.5 text-white/40 text-[10px] uppercase font-bold tracking-wider min-w-0">
+                      <span className={`${colorClass} flex-shrink-0`}>
+                        <StatIcon iconType={icon} />
+                      </span>
+                      <span className="truncate w-full">{name}</span>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+                      <GripIcon />
+                    </div>
                   </div>
-                  <div className="text-lg font-extrabold text-white flex items-baseline gap-0.5">
+                  <div className="text-lg font-extrabold text-white flex items-baseline gap-0.5 pointer-events-none">
                     <span>{value}</span>
                     {unit && <span className={`text-[10px] font-semibold ${colorClass} ml-0.5`}>{unit}</span>}
                   </div>
