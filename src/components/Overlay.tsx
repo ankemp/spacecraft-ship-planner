@@ -16,6 +16,8 @@ export function Overlay() {
   const clearShip = useShipStore(s => s.clearShip);
   const setBlocks = useShipStore(s => s.setBlocks);
   const smallSteelParts = useShipStore(s => selectBOM(s).smallSteelParts);
+  const smallTitaniumParts = useShipStore(s => selectBOM(s).smallTitaniumParts);
+  const titaniumParts = useShipStore(s => selectBOM(s).titaniumParts);
   const supportHardware = useShipStore(s => selectBOM(s).supportHardware);
   const blocks = useShipStore(s => s.blocks);
 
@@ -371,14 +373,31 @@ export function Overlay() {
         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
           <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px] mb-4">Bill of Materials</h2>
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200 min-w-0">
-              <span className="text-white/40 text-[10px] uppercase font-bold tracking-wider truncate w-full">Small Steel Parts</span>
-              <span className="text-lg font-extrabold text-blue-400">{smallSteelParts}</span>
-            </div>
-            <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200 min-w-0">
-              <span className="text-white/40 text-[10px] uppercase font-bold tracking-wider truncate w-full">Support Hardware</span>
-              <span className="text-lg font-extrabold text-orange-400">{supportHardware}</span>
-            </div>
+            {[
+              { label: 'Small Steel Parts', value: smallSteelParts, color: 'text-blue-400' },
+              { label: 'Small Titanium Parts', value: smallTitaniumParts, color: 'text-teal-400' },
+              { label: 'Titanium Parts', value: titaniumParts, color: 'text-cyan-400' },
+              { label: 'Support Hardware', value: supportHardware, color: 'text-orange-400' }
+            ].map(item => {
+              const isZero = item.value === 0;
+              return (
+                <div
+                  key={item.label}
+                  className={`flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200 min-w-0 ${
+                    isZero
+                      ? 'bg-white/[0.01] border border-white/5 opacity-40'
+                      : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10'
+                  }`}
+                >
+                  <span className={`text-[10px] uppercase font-bold tracking-wider truncate w-full transition-colors ${isZero ? 'text-white/20' : 'text-white/40'}`}>
+                    {item.label}
+                  </span>
+                  <span className={`text-lg font-extrabold transition-colors ${isZero ? 'text-white/20' : item.color}`}>
+                    {item.value}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-4">
@@ -771,7 +790,12 @@ export function Overlay() {
                         {ship.totalBlocks} {ship.totalBlocks === 1 ? 'block' : 'blocks'}
                       </span>
                       <span className="text-white/40">
-                        SSP: {ship.bom.smallSteelParts || 0} • SH: {ship.bom.supportHardware || 0}
+                        {[
+                          ship.bom.smallSteelParts && `SSP: ${ship.bom.smallSteelParts}`,
+                          ship.bom.smallTitaniumParts && `STP: ${ship.bom.smallTitaniumParts}`,
+                          ship.bom.titaniumParts && `TP: ${ship.bom.titaniumParts}`,
+                          ship.bom.supportHardware && `SH: ${ship.bom.supportHardware}`
+                        ].filter(Boolean).join(' • ') || 'No cost'}
                         {ship.stats && Object.entries(ship.stats)
                           .filter(([, v]) => v > 0)
                           .map(([k, v]) => {

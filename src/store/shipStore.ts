@@ -28,6 +28,8 @@ export interface SavedShip {
   totalBlocks: number;
   bom: {
     smallSteelParts: number;
+    smallTitaniumParts: number;
+    titaniumParts: number;
     supportHardware: number;
   };
   stats: Record<string, number>;
@@ -452,17 +454,21 @@ export const useShipStore = create<ShipStore>((set, get) => ({
 
 export const selectBOM = (state: ShipStore | { blocks: BlockInstance[] }) => {
   let smallSteelParts = 0;
+  let smallTitaniumParts = 0;
+  let titaniumParts = 0;
   let supportHardware = 0;
 
   state.blocks.forEach(b => {
     const def = BLOCK_DEFINITIONS[b.type];
     if (def && def.costs) {
       smallSteelParts += def.costs.smallSteelParts || 0;
+      smallTitaniumParts += def.costs.smallTitaniumParts || 0;
+      titaniumParts += def.costs.titaniumParts || 0;
       supportHardware += def.costs.supportHardware || 0;
     }
   });
 
-  return { smallSteelParts, supportHardware };
+  return { smallSteelParts, smallTitaniumParts, titaniumParts, supportHardware };
 };
 
 export const selectStats = (state: ShipStore | { blocks: BlockInstance[] }) => {
