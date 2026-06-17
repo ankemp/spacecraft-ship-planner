@@ -359,6 +359,22 @@ export function Overlay() {
                     )}
                   </div>
                   <span className="text-[10px] text-white/40 mt-0.5">{def.dimensions.join(' × ')} Units</span>
+                  {def.tags && def.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {def.tags.map(tag => (
+                        <span
+                          key={tag}
+                          className={`text-[8px] px-1.5 py-0.5 rounded border font-bold uppercase tracking-wider flex-shrink-0 ${
+                            tag === 'Size Incorrect'
+                              ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                              : 'bg-white/5 text-white/60 border-white/10'
+                          }`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </button>
             );

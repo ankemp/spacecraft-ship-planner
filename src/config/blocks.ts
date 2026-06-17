@@ -19,6 +19,7 @@ export interface BlockDefinition {
   group: string;
   plannerPartName?: string;
   stats?: Record<string, number>;
+  tags?: string[];
 }
 
 export interface StatMetadata {
@@ -285,23 +286,24 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       boostHeatGeneration: 1000
     }
   },
-  // thruster_quiet_breeze: {
-  //   type: 'thruster_quiet_breeze',
-  //   name: 'Quiet Breeze',
-  //   dimensions: [1, 1, 1],
-  //   color: '#d35400',
-  //   group: 'Thrusters',
-  //   stats: {
-  //     weight: 20,
-  //     systemRequirements: 1000,
-  //     heatInterface: 0, // TODO
-  //     materialHeatConductivity: 60,
-  //     force: 700,
-  //     thrust: 60,
-  //     powerConsumption: 15,
-  //     steeringStrength: 15,
-  //   }
-  // },
+  thruster_quiet_breeze: {
+    type: 'thruster_quiet_breeze',
+    name: 'Quiet Breeze',
+    dimensions: [1, 1, 1],
+    color: '#d35400',
+    group: 'Thrusters',
+    stats: {
+      weight: 20,
+      systemRequirements: 1000,
+      heatInterface: 0, // TODO
+      materialHeatConductivity: 60,
+      force: 700,
+      thrust: 60,
+      powerConsumption: 15,
+      steeringStrength: 15,
+    },
+    tags: ['Size Incorrect']
+  },
   thruster_voidseeker: {
     type: 'thruster_voidseeker',
     name: 'Voidseeker',
@@ -320,44 +322,46 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       boostHeatGeneration: 800
     }
   },
-  // thruster_grasshopper: {
-  //   type: 'thruster_grasshopper',
-  //   name: 'Grasshopper',
-  //   dimensions: [1, 1, 1],
-  //   color: '#d35400',
-  //   group: 'Thrusters',
-  //   stats: {
-  //     weight: 20,
-  //     systemRequirements: 600,
-  //     materialHeatConductivity: 120,
-  //     force: 600,
-  //     thrust: 100,
-  //     powerConsumption: 80,
-  //     steeringStrength: 15,
-  //     boostThrust: 150,
-  //     boostPowerConsumption: 150,
-  //     heatDissipation: 50
-  //   }
-  // },
-  // thruster_silent: {
-  //   type: 'thruster_silent',
-  //   name: 'Silent Thruster',
-  //   dimensions: [1, 1, 1],
-  //   color: '#d35400',
-  //   group: 'Thrusters',
-  //   stats: {
-  //     weight: 20,
-  //     systemRequirements: 1100,
-  //     materialHeatConductivity: 0, // TODO
-  //     force: 1250,
-  //     thrust: 150,
-  //     powerConsumption: 80,
-  //     steeringStrength: 30,
-  //     boostThrust: 200,
-  //     boostPowerConsumption: 150,
-  //     boostHeatGeneration: 500
-  //   }
-  // },
+  thruster_grasshopper: {
+    type: 'thruster_grasshopper',
+    name: 'Grasshopper',
+    dimensions: [1, 1, 1],
+    color: '#d35400',
+    group: 'Thrusters',
+    stats: {
+      weight: 20,
+      systemRequirements: 600,
+      materialHeatConductivity: 120,
+      force: 600,
+      thrust: 100,
+      powerConsumption: 80,
+      steeringStrength: 15,
+      boostThrust: 150,
+      boostPowerConsumption: 150,
+      heatDissipation: 50
+    },
+    tags: ['Size Incorrect']
+  },
+  thruster_silent: {
+    type: 'thruster_silent',
+    name: 'Silent Thruster',
+    dimensions: [1, 1, 1],
+    color: '#d35400',
+    group: 'Thrusters',
+    stats: {
+      weight: 20,
+      systemRequirements: 1100,
+      materialHeatConductivity: 0, // TODO
+      force: 1250,
+      thrust: 150,
+      powerConsumption: 80,
+      steeringStrength: 30,
+      boostThrust: 200,
+      boostPowerConsumption: 150,
+      boostHeatGeneration: 500
+    },
+    tags: ['Size Incorrect']
+  },
   cockpit_pathfinder: {
     type: 'cockpit_pathfinder',
     name: 'Pathfinder Cockpit',
@@ -376,7 +380,8 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#2288ff',
     group: 'Cockpits',
     plannerPartName: 'cockpit_tc_1',
-    stats: { systemSupport: 200, frame: 20, weight: 40, heatInterface: 60 }
+    stats: { systemSupport: 200, frame: 20, weight: 40, heatInterface: 60 },
+    tags: ['Size Incorrect']
   },
   cockpit_beaver: {
     type: 'cockpit_beaver',
@@ -386,7 +391,8 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#2288ff',
     group: 'Cockpits',
     plannerPartName: 'cockpit_mk_1',
-    stats: { systemSupport: 100, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 60, hullImpactDamage: -40 }
+    stats: { systemSupport: 100, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 60, hullImpactDamage: -40 },
+    tags: ['Size Incorrect']
   },
   cockpit_cocoon: {
     type: 'cockpit_cocoon',
@@ -396,6 +402,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#2288ff',
     group: 'Cockpits',
     plannerPartName: 'cockpit_da_1',
-    stats: { systemSupport: 100, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 40, hullImpactDamage: -40, heatDissipation: 300, heatGeneration: 4000 }
+    stats: { systemSupport: 100, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 40, hullImpactDamage: -40, heatDissipation: 300, heatGeneration: 4000 },
+    tags: ['Size Incorrect']
   }
 };
