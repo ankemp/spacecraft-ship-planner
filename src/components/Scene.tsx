@@ -171,6 +171,7 @@ export function Scene() {
   const cancelMoveBlock = useShipStore(s => s.cancelMoveBlock);
 
   const [cursorPos, setCursorPos] = useState<[number, number, number] | null>(null);
+  const [cursorNormal, setCursorNormal] = useState<[number, number, number] | null>(null);
   const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
   const [prevMovingBlockId, setPrevMovingBlockId] = useState<string | null>(null);
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
@@ -209,8 +210,13 @@ export function Scene() {
       normal = e.face.normal.clone().applyMatrix3(normalMatrix).normalize();
     }
 
+    const nx = Math.round(normal.x);
+    const ny = Math.round(normal.y);
+    const nz = Math.round(normal.z);
+    setCursorNormal([nx, ny, nz]);
+
     // Add a tiny bit of the normal to the hit point to ensure we pick the adjacent cell
-    const hitPoint = point.add(normal.multiplyScalar(0.1));
+    const hitPoint = point.add(normal.clone().multiplyScalar(0.1));
     const cx = Math.floor(hitPoint.x);
     const cy = Math.max(0, Math.floor(hitPoint.y));
     const cz = Math.floor(hitPoint.z);
@@ -223,6 +229,7 @@ export function Scene() {
       return;
     }
     setCursorPos(null);
+    setCursorNormal(null);
   };
 
   const onPointerDown = (e: ThreeEvent<PointerEvent>) => {
@@ -235,18 +242,46 @@ export function Scene() {
   const ghostType = movingBlock ? movingBlock.type : activeTool;
   const def = BLOCK_DEFINITIONS[ghostType];
 
-  // Dynamically derive the centered anchor position of the block under rotation (aligning bottom with cursorPos Y)
+  // Dynamically derive the centered anchor position of the block under rotation (aligning bottom with cursorPos Y, adjusted by face normal to prevent clipping)
   let hoverPos: [number, number, number] | null = null;
   if (cursorPos) {
     if (def) {
       const currentRotBounds = getBlockBounds(ghostType, [0, 0, 0], rotation);
       const sizeX = currentRotBounds.maxX - currentRotBounds.minX;
       const sizeZ = currentRotBounds.maxZ - currentRotBounds.minZ;
-      hoverPos = [
-        cursorPos[0] - Math.floor(sizeX / 2) - currentRotBounds.minX,
-        cursorPos[1] - currentRotBounds.minY,
-        cursorPos[2] - Math.floor(sizeZ / 2) - currentRotBounds.minZ,
-      ];
+
+      const nx = cursorNormal ? cursorNormal[0] : 0;
+      const ny = cursorNormal ? cursorNormal[1] : 1;
+      const nz = cursorNormal ? cursorNormal[2] : 0;
+
+      let hx: number;
+      if (nx > 0) {
+        hx = cursorPos[0] - currentRotBounds.minX;
+      } else if (nx < 0) {
+        hx = cursorPos[0] + 1 - currentRotBounds.maxX;
+      } else {
+        hx = cursorPos[0] - Math.floor(sizeX / 2) - currentRotBounds.minX;
+      }
+
+      let hy: number;
+      if (ny > 0) {
+        hy = cursorPos[1] - currentRotBounds.minY;
+      } else if (ny < 0) {
+        hy = cursorPos[1] + 1 - currentRotBounds.maxY;
+      } else {
+        hy = cursorPos[1] - currentRotBounds.minY;
+      }
+
+      let hz: number;
+      if (nz > 0) {
+        hz = cursorPos[2] - currentRotBounds.minZ;
+      } else if (nz < 0) {
+        hz = cursorPos[2] + 1 - currentRotBounds.maxZ;
+      } else {
+        hz = cursorPos[2] - Math.floor(sizeZ / 2) - currentRotBounds.minZ;
+      }
+
+      hoverPos = [hx, hy, hz];
     } else {
       hoverPos = cursorPos;
     }
