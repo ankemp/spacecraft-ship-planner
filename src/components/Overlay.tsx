@@ -800,18 +800,7 @@ export function Overlay() {
                         {ship.totalBlocks} {ship.totalBlocks === 1 ? 'block' : 'blocks'}
                       </span>
                       <span className="text-white/40">
-                        {[
-                          ship.bom.smallSteelParts && `SSP: ${ship.bom.smallSteelParts}`,
-                          ship.bom.smallTitaniumParts && `STP: ${ship.bom.smallTitaniumParts}`,
-                          ship.bom.titaniumParts && `TP: ${ship.bom.titaniumParts}`,
-                          ship.bom.supportHardware && `SH: ${ship.bom.supportHardware}`
-                        ].filter(Boolean).join(' • ') || 'No cost'}
-                        {ship.stats && Object.entries(ship.stats)
-                          .filter(([, v]) => v > 0)
-                          .map(([k, v]) => {
-                            const unit = STAT_METADATA[k]?.unit || '';
-                            return ` • ${v}${unit}`;
-                          }).join('')}
+                        SP: {ship.stats?.systemRequirements || 0} / {ship.stats?.systemSupport || 0} • F/W: {(ship.stats?.force || 0).toFixed(1)}t / {(ship.stats?.weight || 0).toFixed(1)}t
                       </span>
                     </div>
 
