@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, Grid, Sky, Environment, Box, Edges } from '@react-three/drei';
+import { OrbitControls, Grid, Sky, Environment, Edges } from '@react-three/drei';
 import { useShipStore, getBlockBounds } from '../store/shipStore';
 import { Block } from './Block';
+import { BlockGeometry } from './BlockGeometry';
 import { BLOCK_DEFINITIONS } from '../config/blocks';
 import * as THREE from 'three';
 
@@ -160,6 +161,7 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
 export function Scene() {
   const blocks = useShipStore(s => s.blocks);
   const activeTool = useShipStore(s => s.activeTool);
+  const activeShape = useShipStore(s => s.activeShape);
   const setActiveTool = useShipStore(s => s.setActiveTool);
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
@@ -241,6 +243,8 @@ export function Scene() {
 
   const ghostType = movingBlock ? movingBlock.type : activeTool;
   const def = BLOCK_DEFINITIONS[ghostType];
+  const isHull = def && (def.group === 'Steel' || def.group === 'Titanium');
+  const ghostShape = movingBlock ? (movingBlock.shape || 'full') : (isHull ? activeShape : 'full');
 
   // Dynamically derive the centered anchor position of the block under rotation (aligning bottom with cursorPos Y, adjusted by face normal to prevent clipping)
   let hoverPos: [number, number, number] | null = null;
@@ -367,10 +371,11 @@ export function Scene() {
       {/* Ghost Block */}
       {hoverPos && def && (
         <group position={hoverPos} rotation={rotation}>
-          <Box raycast={() => null} args={def.dimensions} position={[def.dimensions[0] / 2, def.dimensions[1] / 2, def.dimensions[2] / 2]}>
+          <mesh raycast={() => null}>
+            <BlockGeometry shape={ghostShape} w={def.dimensions[0]} h={def.dimensions[1]} d={def.dimensions[2]} />
             <meshStandardMaterial color={isInvalid ? '#ff0000' : def.color} transparent opacity={0.6} />
             <Edges color={isInvalid ? 'red' : 'white'} />
-          </Box>
+          </mesh>
         </group>
       )}
 

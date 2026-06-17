@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useShipStore, selectBOM, selectStats } from '../store/shipStore';
-import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER } from '../config/blocks';
+import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER, HULL_SHAPES } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
 import { CategoryIcon, GripIcon, StatIcon } from './Icon';
+import { Shape3DPreview } from './Shape3DPreview';
 
 const formatStatKey = (key: string): string => {
   return key
@@ -12,7 +13,11 @@ const formatStatKey = (key: string): string => {
 
 export function Overlay() {
   const activeTool = useShipStore(s => s.activeTool);
+  const activeDef = BLOCK_DEFINITIONS[activeTool];
+  const activeColor = activeDef?.color || '#909090';
   const setActiveTool = useShipStore(s => s.setActiveTool);
+  const activeShape = useShipStore(s => s.activeShape);
+  const setActiveShape = useShipStore(s => s.setActiveShape);
   const clearShip = useShipStore(s => s.clearShip);
   const setBlocks = useShipStore(s => s.setBlocks);
   const smallSteelParts = useShipStore(s => selectBOM(s).smallSteelParts);
@@ -143,6 +148,7 @@ export function Overlay() {
   const removeBlock = useShipStore(s => s.removeBlock);
   const startMoveBlock = useShipStore(s => s.startMoveBlock);
   const updateBlockColor = useShipStore(s => s.updateBlockColor);
+  const updateBlockShape = useShipStore(s => s.updateBlockShape);
 
   // Long term storage hooks
   const savedShips = useShipStore(s => s.savedShips);
@@ -236,6 +242,9 @@ export function Overlay() {
 
   const hasPlannerParts = partNames.length > 0;
   const selectedBlock = blocks.find(b => b.id === selectedBlockId);
+  const selectedBlockDef = selectedBlock ? BLOCK_DEFINITIONS[selectedBlock.type] : null;
+  const isSelectedHull = selectedBlockDef && (selectedBlockDef.group === 'Steel' || selectedBlockDef.group === 'Titanium');
+  const selectedBlockColor = selectedBlock?.color || selectedBlockDef?.color || '#909090';
 
   const handleSaveCurrentShip = () => {
     if (shipNameInput.trim()) {
@@ -324,6 +333,34 @@ export function Overlay() {
           </button>
         </div>
 
+        {/* Shape Selector (Only for Steel/Titanium if multiple shapes exist) */}
+        {(currentCategory === 'Steel' || currentCategory === 'Titanium') && HULL_SHAPES.length > 1 && (
+          <div className="flex flex-col gap-2 border-b border-white/10 pb-3.5 flex-shrink-0">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-white/40">Select Hull Shape</span>
+            <div className="grid grid-cols-5 gap-1.5">
+              {HULL_SHAPES.map(shape => {
+                const isActive = activeShape === shape.id;
+                return (
+                  <button
+                    key={shape.id}
+                    onClick={() => setActiveShape(shape.id)}
+                    className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 border border-white/5 cursor-pointer ${isActive
+                        ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.15)] scale-105'
+                        : 'bg-white/2 text-white/60 hover:text-white hover:bg-white/5 hover:scale-102'
+                      }`}
+                    title={shape.name}
+                  >
+                    <Shape3DPreview shapeId={shape.id} color={activeColor} className="w-full h-8 mb-1 flex-shrink-0" />
+                    <span className="text-[8px] font-semibold truncate max-w-full leading-none">
+                      {shape.name.split(' ')[0]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           {(groupedBlocks[currentCategory] || []).map(def => {
             const isActive = activeTool === def.type;
@@ -364,11 +401,10 @@ export function Overlay() {
                       {def.tags.map(tag => (
                         <span
                           key={tag}
-                          className={`text-[8px] px-1.5 py-0.5 rounded border font-bold uppercase tracking-wider flex-shrink-0 ${
-                            tag === 'Size Incorrect'
+                          className={`text-[8px] px-1.5 py-0.5 rounded border font-bold uppercase tracking-wider flex-shrink-0 ${tag === 'Size Incorrect'
                               ? 'bg-red-500/10 text-red-400 border-red-500/20'
                               : 'bg-white/5 text-white/60 border-white/10'
-                          }`}
+                            }`}
                         >
                           {tag}
                         </span>
@@ -399,11 +435,10 @@ export function Overlay() {
               return (
                 <div
                   key={item.label}
-                  className={`flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200 min-w-0 ${
-                    isZero
+                  className={`flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200 min-w-0 ${isZero
                       ? 'bg-white/[0.01] border border-white/5 opacity-40'
                       : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10'
-                  }`}
+                    }`}
                 >
                   <span className={`text-[10px] uppercase font-bold tracking-wider truncate w-full transition-colors ${isZero ? 'text-white/20' : 'text-white/40'}`}>
                     {item.label}
@@ -671,6 +706,34 @@ export function Overlay() {
                     >
                       Flip X
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Block Shape Selection (Only for Steel/Titanium if multiple shapes exist) */}
+              {isSelectedHull && HULL_SHAPES.length > 1 && (
+                <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Modify Shape</span>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {HULL_SHAPES.map(shape => {
+                      const isActive = (selectedBlock.shape || 'full') === shape.id;
+                      return (
+                        <button
+                          key={shape.id}
+                          onClick={() => updateBlockShape(selectedBlock.id, shape.id)}
+                          className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-200 border border-white/10 cursor-pointer ${isActive
+                              ? 'bg-blue-500/20 border-blue-500 text-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.2)]'
+                              : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 hover:scale-102'
+                            }`}
+                          title={shape.name}
+                        >
+                          <Shape3DPreview shapeId={shape.id} color={selectedBlockColor} className="w-full h-6 mb-1 flex-shrink-0" />
+                          <span className="text-[8px] font-semibold truncate max-w-full leading-none">
+                            {shape.name.split(' ')[0]}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

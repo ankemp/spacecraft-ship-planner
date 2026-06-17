@@ -22,6 +22,16 @@ export interface BlockDefinition {
   tags?: string[];
 }
 
+export interface BlockShapeDefinition {
+  id: string;
+  name: string;
+}
+
+export const HULL_SHAPES = [
+  { id: 'full', name: 'Full Block' },
+] as const;
+
+
 export interface StatMetadata {
   name: string;
   unit?: string;

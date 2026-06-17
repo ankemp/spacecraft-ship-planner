@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect, memo } from 'react';
-import { Box, Edges } from '@react-three/drei';
+import { Edges } from '@react-three/drei';
 import { BLOCK_DEFINITIONS } from '../config/blocks';
 import { useShipStore } from '../store/shipStore';
+import { BlockGeometry } from './BlockGeometry';
 import type { ThreeEvent } from '@react-three/fiber';
 
 interface BlockProps {
@@ -10,9 +11,10 @@ interface BlockProps {
   position: [number, number, number];
   rotation: [number, number, number];
   color?: string;
+  shape?: string;
 }
 
-export const Block = memo(function Block({ id, type, position, rotation, color }: BlockProps) {
+export const Block = memo(function Block({ id, type, position, rotation, color, shape }: BlockProps) {
   const def = BLOCK_DEFINITIONS[type];
   const removeBlock = useShipStore(s => s.removeBlock);
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
@@ -49,9 +51,7 @@ export const Block = memo(function Block({ id, type, position, rotation, color }
 
   return (
     <group position={position} rotation={rotation}>
-      <Box 
-        args={[w, h, d]} 
-        position={[w / 2, h / 2, d / 2]}
+      <mesh 
         userData={{ blockId: id }}
         onPointerOver={(e: ThreeEvent<PointerEvent>) => {
           if (canHover) {
@@ -115,22 +115,25 @@ export const Block = memo(function Block({ id, type, position, rotation, color }
           }
         }}
       >
+        <BlockGeometry shape={shape} w={w} h={h} d={d} />
         <meshStandardMaterial color={color || def.color} />
         <Edges color={isSelected ? '#ffaa00' : (isHovered ? '#3b82f6' : 'black')} />
-      </Box>
+      </mesh>
 
       {isSelected && (
-        <Box raycast={() => null} args={[w + 0.05, h + 0.05, d + 0.05]} position={[w / 2, h / 2, d / 2]}>
+        <mesh raycast={() => null} position={[-0.025, -0.025, -0.025]}>
+          <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} />
           <meshBasicMaterial visible={false} />
           <Edges color="#ffaa00" scale={1.01} />
-        </Box>
+        </mesh>
       )}
 
       {!isSelected && isHovered && (
-        <Box raycast={() => null} args={[w + 0.05, h + 0.05, d + 0.05]} position={[w / 2, h / 2, d / 2]}>
+        <mesh raycast={() => null} position={[-0.025, -0.025, -0.025]}>
+          <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} />
           <meshBasicMaterial visible={false} />
           <Edges color="#3b82f6" scale={1.01} />
-        </Box>
+        </mesh>
       )}
     </group>
   );

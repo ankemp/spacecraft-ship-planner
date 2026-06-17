@@ -7,7 +7,7 @@ export function serializeBlocks(blocks: BlockInstance[]): string {
     const rxIdx = Math.round(b.rotation[0] / (Math.PI / 2)) % 4;
     const ryIdx = Math.round(b.rotation[1] / (Math.PI / 2)) % 4;
     const rzIdx = Math.round(b.rotation[2] / (Math.PI / 2)) % 4;
-    const item: (string | number)[] = [
+    const item: (string | number | null | undefined)[] = [
       b.type,
       x,
       y,
@@ -16,8 +16,11 @@ export function serializeBlocks(blocks: BlockInstance[]): string {
       ryIdx,
       rzIdx
     ];
-    if (b.color) {
-      item.push(b.color);
+    if (b.color || b.shape) {
+      item.push(b.color || null);
+    }
+    if (b.shape) {
+      item.push(b.shape);
     }
     return item;
   });
@@ -42,10 +45,28 @@ export function deserializeBlocks(str: string): BlockInstance[] {
       base64 += '=';
     }
     const json = atob(base64);
-    const data = JSON.parse(json) as (string | number)[][];
+    const data = JSON.parse(json) as (string | number | null)[][];
     
     return data.map(arr => {
-      const [type, x, y, z, rxIdx, ryIdx, rzIdx, color] = arr;
+      const [type, x, y, z, rxIdx, ryIdx, rzIdx, p7, p8] = arr;
+      
+      let color: string | undefined = undefined;
+      let shape: string | undefined = undefined;
+      
+      if (p7 !== undefined && p7 !== null) {
+        const p7Str = p7 as string;
+        if (p7Str.startsWith('#')) {
+          color = p7Str;
+          if (p8 !== undefined && p8 !== null) {
+            shape = p8 as string;
+          }
+        } else {
+          shape = p7Str;
+        }
+      } else if (p8 !== undefined && p8 !== null) {
+        shape = p8 as string;
+      }
+      
       return {
         id: uuidv4(),
         type: type as string,
@@ -55,7 +76,8 @@ export function deserializeBlocks(str: string): BlockInstance[] {
           ((ryIdx as number) || 0) * (Math.PI / 2),
           ((rzIdx as number) || 0) * (Math.PI / 2)
         ],
-        ...(color ? { color: color as string } : {})
+        ...(color ? { color } : {}),
+        ...(shape ? { shape } : {})
       };
     });
   } catch (e) {

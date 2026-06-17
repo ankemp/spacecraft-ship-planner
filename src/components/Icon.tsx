@@ -153,4 +153,4 @@ export const GripIcon = () => (
         <circle cx="8" cy="18" r="2" />
         <circle cx="16" cy="18" r="2" />
     </svg>
-);
+);

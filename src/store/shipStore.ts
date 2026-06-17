@@ -10,6 +10,7 @@ export interface BlockInstance {
   position: [number, number, number]; // Grid coords of the minimum corner
   rotation: [number, number, number]; // Euler angles in radians
   color?: string;
+  shape?: string;
 }
 
 export interface BlockBounds {
@@ -39,6 +40,7 @@ export interface SavedShip {
 interface ShipStore {
   blocks: BlockInstance[];
   activeTool: string;
+  activeShape: string;
   selectedBlockId: string | null;
   movingBlock: BlockInstance | null;
   savedShips: SavedShip[];
@@ -46,6 +48,7 @@ interface ShipStore {
   setToast: (toast: string | null) => void;
   setBlocks: (blocks: BlockInstance[]) => void;
   setActiveTool: (type: string) => void;
+  setActiveShape: (shape: string) => void;
   setSelectedBlockId: (id: string | null) => void;
   setMovingBlock: (block: BlockInstance | null) => void;
   addBlock: (type: string, position: [number, number, number], rotation: [number, number, number]) => boolean;
@@ -61,6 +64,7 @@ interface ShipStore {
   deleteSavedShip: (id: string) => void;
   renameSavedShip: (id: string, name: string) => void;
   updateBlockColor: (id: string, color: string | undefined) => void;
+  updateBlockShape: (id: string, shape: string) => void;
 }
 
 export function getBlockBounds(type: string, position: [number, number, number], rotation: [number, number, number]): BlockBounds {
@@ -181,6 +185,7 @@ const getInitialSavedShips = (): SavedShip[] => {
 export const useShipStore = create<ShipStore>((set, get) => ({
   blocks: getInitialBlocks(),
   activeTool: 'steel_4x3x2',
+  activeShape: 'full',
   selectedBlockId: null,
   movingBlock: null,
   savedShips: getInitialSavedShips(),
@@ -191,6 +196,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     saveAutosave(blocks);
   },
   setActiveTool: (type) => set({ activeTool: type }),
+  setActiveShape: (shape) => set({ activeShape: shape }),
   setSelectedBlockId: (id) => set({ selectedBlockId: id }),
   setMovingBlock: (block) => set({ movingBlock: block }),
   setToast: (toast) => set({ toast }),
@@ -214,7 +220,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   },
 
   addBlock: (type, position, rotation) => {
-    const { checkCollision, blocks } = get();
+    const { checkCollision, blocks, activeShape } = get();
     
     if (checkCollision(type, position, rotation)) {
       return false; // Collision detected
@@ -229,11 +235,14 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       }
     }
 
+    const isHull = blockDef && (blockDef.group === 'Steel' || blockDef.group === 'Titanium');
+
     const newBlock: BlockInstance = {
       id: uuidv4(),
       type,
       position,
       rotation,
+      shape: isHull ? activeShape : undefined,
     };
 
     const nextBlocks = [...blocks, newBlock];
@@ -461,6 +470,13 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   updateBlockColor: (id, color) => {
     const { blocks } = get();
     const nextBlocks = blocks.map(b => b.id === id ? { ...b, color } : b);
+    set({ blocks: nextBlocks });
+    saveAutosave(nextBlocks);
+  },
+
+  updateBlockShape: (id, shape) => {
+    const { blocks } = get();
+    const nextBlocks = blocks.map(b => b.id === id ? { ...b, shape } : b);
     set({ blocks: nextBlocks });
     saveAutosave(nextBlocks);
   }
