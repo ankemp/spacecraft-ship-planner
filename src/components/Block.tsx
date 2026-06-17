@@ -4,6 +4,7 @@ import { BLOCK_DEFINITIONS } from '../config/blocks';
 import { useShipStore } from '../store/shipStore';
 import { BlockGeometry } from './BlockGeometry';
 import type { ThreeEvent } from '@react-three/fiber';
+import * as THREE from 'three';
 
 interface BlockProps {
   id?: string;
@@ -12,9 +13,12 @@ interface BlockProps {
   rotation: [number, number, number];
   color?: string;
   shape?: string;
+  flipX?: boolean;
+  flipY?: boolean;
+  flipZ?: boolean;
 }
 
-export const Block = memo(function Block({ id, type, position, rotation, color, shape }: BlockProps) {
+export const Block = memo(function Block({ id, type, position, rotation, color, shape, flipX, flipY, flipZ }: BlockProps) {
   const def = BLOCK_DEFINITIONS[type];
   const removeBlock = useShipStore(s => s.removeBlock);
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
@@ -115,22 +119,22 @@ export const Block = memo(function Block({ id, type, position, rotation, color, 
           }
         }}
       >
-        <BlockGeometry shape={shape} w={w} h={h} d={d} />
-        <meshStandardMaterial color={color || def.color} />
+        <BlockGeometry shape={shape} w={w} h={h} d={d} flipX={flipX} flipY={flipY} flipZ={flipZ} />
+        <meshStandardMaterial color={color || def.color} side={THREE.DoubleSide} />
         <Edges color={isSelected ? '#ffaa00' : (isHovered ? '#3b82f6' : 'black')} />
       </mesh>
-
+ 
       {isSelected && (
         <mesh raycast={() => null} position={[-0.025, -0.025, -0.025]}>
-          <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} />
+          <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} flipX={flipX} flipY={flipY} flipZ={flipZ} />
           <meshBasicMaterial visible={false} />
           <Edges color="#ffaa00" scale={1.01} />
         </mesh>
       )}
-
+ 
       {!isSelected && isHovered && (
         <mesh raycast={() => null} position={[-0.025, -0.025, -0.025]}>
-          <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} />
+          <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} flipX={flipX} flipY={flipY} flipZ={flipZ} />
           <meshBasicMaterial visible={false} />
           <Edges color="#3b82f6" scale={1.01} />
         </mesh>

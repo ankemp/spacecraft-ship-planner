@@ -29,6 +29,8 @@ export interface BlockShapeDefinition {
 
 export const HULL_SHAPES = [
   { id: 'full', name: 'Full Block' },
+  { id: 'slope', name: 'Slope' },
+  { id: 'slope_flat', name: 'Slope Flat' },
 ] as const;
 
 

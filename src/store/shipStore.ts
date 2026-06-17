@@ -11,6 +11,9 @@ export interface BlockInstance {
   rotation: [number, number, number]; // Euler angles in radians
   color?: string;
   shape?: string;
+  flipX?: boolean;
+  flipY?: boolean;
+  flipZ?: boolean;
 }
 
 export interface BlockBounds {
@@ -41,6 +44,9 @@ interface ShipStore {
   blocks: BlockInstance[];
   activeTool: string;
   activeShape: string;
+  activeFlipX: boolean;
+  activeFlipY: boolean;
+  activeFlipZ: boolean;
   selectedBlockId: string | null;
   movingBlock: BlockInstance | null;
   savedShips: SavedShip[];
@@ -49,17 +55,21 @@ interface ShipStore {
   setBlocks: (blocks: BlockInstance[]) => void;
   setActiveTool: (type: string) => void;
   setActiveShape: (shape: string) => void;
+  setActiveFlipX: (flip: boolean) => void;
+  setActiveFlipY: (flip: boolean) => void;
+  setActiveFlipZ: (flip: boolean) => void;
   setSelectedBlockId: (id: string | null) => void;
   setMovingBlock: (block: BlockInstance | null) => void;
   addBlock: (type: string, position: [number, number, number], rotation: [number, number, number]) => boolean;
   removeBlock: (id: string) => void;
   clearShip: () => void;
   checkCollision: (type: string, position: [number, number, number], rotation: [number, number, number]) => boolean;
-  startMoveBlock: (id: string) => void;
-  placeMovingBlock: (position: [number, number, number], rotation: [number, number, number]) => boolean;
-  cancelMoveBlock: () => void;
   nudgeBlock: (id: string, delta: [number, number, number]) => boolean;
+  placeMovingBlock: (position: [number, number, number], rotation: [number, number, number]) => boolean;
+  startMoveBlock: (id: string) => void;
+  cancelMoveBlock: () => void;
   rotateBlock: (id: string, axis: 'x' | 'y' | 'z') => boolean;
+  flipBlock: (id: string, axis: 'x' | 'y' | 'z') => boolean;
   saveCurrentShip: (name: string) => void;
   deleteSavedShip: (id: string) => void;
   renameSavedShip: (id: string, name: string) => void;
@@ -186,17 +196,22 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   blocks: getInitialBlocks(),
   activeTool: 'steel_4x3x2',
   activeShape: 'full',
+  activeFlipX: false,
+  activeFlipY: false,
+  activeFlipZ: false,
   selectedBlockId: null,
   movingBlock: null,
   savedShips: getInitialSavedShips(),
   toast: null,
-
   setBlocks: (blocks) => {
-    set({ blocks, selectedBlockId: null, movingBlock: null });
+    set({ blocks });
     saveAutosave(blocks);
   },
   setActiveTool: (type) => set({ activeTool: type }),
   setActiveShape: (shape) => set({ activeShape: shape }),
+  setActiveFlipX: (flip) => set({ activeFlipX: flip }),
+  setActiveFlipY: (flip) => set({ activeFlipY: flip }),
+  setActiveFlipZ: (flip) => set({ activeFlipZ: flip }),
   setSelectedBlockId: (id) => set({ selectedBlockId: id }),
   setMovingBlock: (block) => set({ movingBlock: block }),
   setToast: (toast) => set({ toast }),
@@ -220,7 +235,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   },
 
   addBlock: (type, position, rotation) => {
-    const { checkCollision, blocks, activeShape } = get();
+    const { checkCollision, blocks, activeShape, activeFlipX, activeFlipY, activeFlipZ } = get();
     
     if (checkCollision(type, position, rotation)) {
       return false; // Collision detected
@@ -243,6 +258,9 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       position,
       rotation,
       shape: isHull ? activeShape : undefined,
+      flipX: isHull ? activeFlipX : undefined,
+      flipY: isHull ? activeFlipY : undefined,
+      flipZ: isHull ? activeFlipZ : undefined,
     };
 
     const nextBlocks = [...blocks, newBlock];
@@ -285,7 +303,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   },
 
   placeMovingBlock: (position, rotation) => {
-    const { movingBlock, checkCollision, blocks } = get();
+    const { movingBlock, checkCollision, blocks, activeFlipX, activeFlipY, activeFlipZ } = get();
     if (!movingBlock) return false;
     
     if (checkCollision(movingBlock.type, position, rotation)) {
@@ -301,10 +319,16 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       }
     }
     
+    const isHull = blockDef && (blockDef.group === 'Steel' || blockDef.group === 'Titanium');
     const placedBlock: BlockInstance = {
       ...movingBlock,
       position,
       rotation,
+      ...(isHull ? {
+        flipX: activeFlipX,
+        flipY: activeFlipY,
+        flipZ: activeFlipZ,
+      } : {}),
     };
     
     const nextBlocks = [...blocks, placedBlock];
@@ -422,6 +446,31 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     }
     
     const nextBlocks = blocks.map(b => b.id === id ? { ...b, position: newPos, rotation: newRot } : b);
+    set({ blocks: nextBlocks });
+    saveAutosave(nextBlocks);
+    return true;
+  },
+
+  flipBlock: (id, axis) => {
+    const { blocks } = get();
+    const block = blocks.find(b => b.id === id);
+    if (!block) return false;
+
+    const def = BLOCK_DEFINITIONS[block.type];
+    if (!def || (def.group !== 'Steel' && def.group !== 'Titanium')) return false;
+
+    const nextBlocks = blocks.map(b => {
+      if (b.id === id) {
+        return {
+          ...b,
+          flipX: axis === 'x' ? !b.flipX : b.flipX,
+          flipY: axis === 'y' ? !b.flipY : b.flipY,
+          flipZ: axis === 'z' ? !b.flipZ : b.flipZ,
+        };
+      }
+      return b;
+    });
+
     set({ blocks: nextBlocks });
     saveAutosave(nextBlocks);
     return true;

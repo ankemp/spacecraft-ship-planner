@@ -16,11 +16,16 @@ export function serializeBlocks(blocks: BlockInstance[]): string {
       ryIdx,
       rzIdx
     ];
-    if (b.color || b.shape) {
+    if (b.color || b.shape || b.flipX || b.flipY || b.flipZ) {
       item.push(b.color || null);
     }
-    if (b.shape) {
-      item.push(b.shape);
+    if (b.shape || b.flipX || b.flipY || b.flipZ) {
+      item.push(b.shape || null);
+    }
+    if (b.flipX || b.flipY || b.flipZ) {
+      item.push(b.flipX ? 1 : 0);
+      item.push(b.flipY ? 1 : 0);
+      item.push(b.flipZ ? 1 : 0);
     }
     return item;
   });
@@ -48,7 +53,7 @@ export function deserializeBlocks(str: string): BlockInstance[] {
     const data = JSON.parse(json) as (string | number | null)[][];
     
     return data.map(arr => {
-      const [type, x, y, z, rxIdx, ryIdx, rzIdx, p7, p8] = arr;
+      const [type, x, y, z, rxIdx, ryIdx, rzIdx, p7, p8, p9, p10, p11] = arr;
       
       let color: string | undefined = undefined;
       let shape: string | undefined = undefined;
@@ -66,6 +71,10 @@ export function deserializeBlocks(str: string): BlockInstance[] {
       } else if (p8 !== undefined && p8 !== null) {
         shape = p8 as string;
       }
+
+      const flipX = p9 === 1;
+      const flipY = p10 === 1;
+      const flipZ = p11 === 1;
       
       return {
         id: uuidv4(),
@@ -77,7 +86,10 @@ export function deserializeBlocks(str: string): BlockInstance[] {
           ((rzIdx as number) || 0) * (Math.PI / 2)
         ],
         ...(color ? { color } : {}),
-        ...(shape ? { shape } : {})
+        ...(shape ? { shape } : {}),
+        ...(flipX ? { flipX } : {}),
+        ...(flipY ? { flipY } : {}),
+        ...(flipZ ? { flipZ } : {})
       };
     });
   } catch (e) {

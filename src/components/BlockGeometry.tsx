@@ -5,30 +5,8 @@ import { HULL_SHAPES } from '../config/blocks';
 type ActiveShapeId = (typeof HULL_SHAPES)[number]['id'];
 
 /**
- * HOW TO ADD NEW BLOCK SHAPES:
- * 
- * 1. Define the shape geometry generator function below:
- *    - For custom vertex-based shapes, create a function that defines its vertices and triangle indices,
- *      builds a THREE.BufferGeometry, and returns it (see `getSlopeGeometry` or `getCornerGeometry` as examples).
- *    - For Three.js built-in geometries, instantiate the geometry (e.g., CylinderGeometry, SphereGeometry),
- *      scale/translate it to fit inside the bounding box of w, h, d, and return it (see `getCylinderGeometry` as example).
- * 
- * 2. Add the generator to the `SHAPE_GENERATORS` lookup dictionary below:
- *    ```typescript
- *    const SHAPE_GENERATORS: Record<ActiveShapeId, (w: number, h: number, d: number) => THREE.BufferGeometry> = {
- *      full: getBoxGeometry,
- *      slope: getSlopeGeometry, // register shape id
- *      ...
- *    };
- *    ```
- * 
- * 3. Update the `HULL_SHAPES` configuration array in `src/config/blocks.ts` to expose the new shape to the UI:
- *    ```typescript
- *    export const HULL_SHAPES = [
- *      { id: 'full', name: 'Full Block' },
- *      { id: 'slope', name: 'Slope' }, // add your shape here
- *    ] as const;
- *    ```
+ * FOR NEW BLOCK SHAPES & EXAMPLES:
+ * See src/components/BlockGeometry.md for reference implementation examples and instructions.
  */
 
 function getBoxGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
@@ -37,14 +15,79 @@ function getBoxGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
   return geom;
 }
 
+function getSlopeGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
+  const vertices = [
+    [0, 0, 0], // v0 (bottom-left-front)
+    [w, 0, 0], // v1 (bottom-right-front)
+    [0, 0, d], // v2 (bottom-left-back)
+    [w, 0, d], // v3 (bottom-right-back)
+    [w, h, 0], // v4 (top-right-front)
+    [w, h, d], // v5 (top-right-back)
+  ];
+  // Winding order: counter-clockwise when viewed from outside of mesh
+  const indices = [
+    // Bottom face (facing -Y)
+    0, 3, 2, 0, 1, 3,
+    // Right face (facing +X)
+    1, 5, 3, 1, 4, 5,
+    // Front face (facing -Z)
+    0, 4, 1,
+    // Back face (facing +Z)
+    2, 3, 5,
+    // Slope face (facing left-up)
+    0, 2, 5, 0, 5, 4,
+  ];
+  const positions: number[] = [];
+  for (const idx of indices) {
+    positions.push(...vertices[idx]);
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geom.computeVertexNormals();
+  return geom;
+}
+
+function getSlopeFlatGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
+  const vertices = [
+    [0, 0, 0],         // v0 (bottom-left-front)
+    [w, 0, 0],         // v1 (bottom-right-front)
+    [0, 0, d],         // v2 (bottom-left-back)
+    [w, 0, d],         // v3 (bottom-right-back)
+    [w - 1, h, 0],     // v4 (slope-top-front transition)
+    [w - 1, h, d],     // v5 (slope-top-back transition)
+    [w, h, 0],         // v6 (top-right-front)
+    [w, h, d],         // v7 (top-right-back)
+  ];
+  // Winding order: counter-clockwise when viewed from outside of mesh
+  const indices = [
+    // Bottom face (facing -Y)
+    0, 3, 2,  0, 1, 3,
+    // Right face (facing +X)
+    1, 7, 3,  1, 6, 7,
+    // Front face (facing -Z)
+    0, 4, 1,  1, 4, 6,
+    // Back face (facing +Z)
+    2, 3, 5,  3, 7, 5,
+    // Slope face (facing left-up)
+    0, 2, 5,  0, 5, 4,
+    // Flat top face (facing +Y)
+    4, 5, 7,  4, 7, 6,
+  ];
+  const positions: number[] = [];
+  for (const idx of indices) {
+    positions.push(...vertices[idx]);
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geom.computeVertexNormals();
+  return geom;
+}
+
+
 const SHAPE_GENERATORS: Record<ActiveShapeId, (w: number, h: number, d: number) => THREE.BufferGeometry> = {
   full: getBoxGeometry,
-  // The shapes below are currently unsupported/inactive in the game.
-  // To enable them, register them here and add them to HULL_SHAPES in src/config/blocks.ts:
-  // slope: getSlopeGeometry,
-  // corner: getCornerGeometry,
-  // pyramid: getPyramidGeometry,
-  // cylinder: getCylinderGeometry,
+  slope: getSlopeGeometry,
+  slope_flat: getSlopeFlatGeometry,
 };
 
 interface BlockGeometryProps {
@@ -52,109 +95,62 @@ interface BlockGeometryProps {
   w: number;
   h: number;
   d: number;
+  flipX?: boolean;
+  flipY?: boolean;
+  flipZ?: boolean;
 }
 
-export function BlockGeometry({ shape = 'full', w, h, d }: BlockGeometryProps) {
+export function BlockGeometry({ shape = 'full', w, h, d, flipX = false, flipY = false, flipZ = false }: BlockGeometryProps) {
   const geometry = useMemo(() => {
     const generator = (shape in SHAPE_GENERATORS)
       ? SHAPE_GENERATORS[shape as ActiveShapeId]
       : SHAPE_GENERATORS.full;
-    return generator(w, h, d);
-  }, [shape, w, h, d]);
+    const geom = generator(w, h, d);
+
+    if (flipX || flipY || flipZ) {
+      const geomClone = geom.clone();
+      const posAttr = geomClone.getAttribute('position') as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+
+      // Apply mirroring
+      for (let i = 0; i < arr.length; i += 3) {
+        if (flipX) arr[i] = w - arr[i];
+        if (flipY) arr[i + 1] = h - arr[i + 1];
+        if (flipZ) arr[i + 2] = d - arr[i + 2];
+      }
+
+      // If winding order is inverted (odd number of flips), reverse the triangle index order to keep normals facing outward
+      const isWindingInverted = (flipX ? 1 : 0) ^ (flipY ? 1 : 0) ^ (flipZ ? 1 : 0);
+      if (isWindingInverted) {
+        const indexAttr = geomClone.getIndex();
+        if (indexAttr) {
+          const indices = indexAttr.array.slice() as Uint16Array | Uint32Array;
+          for (let i = 0; i < indices.length; i += 3) {
+            const temp = indices[i + 1];
+            indices[i + 1] = indices[i + 2];
+            indices[i + 2] = temp;
+          }
+          geomClone.setIndex(new THREE.BufferAttribute(indices, 1));
+        } else {
+          // Non-indexed: swap vertex 1 and vertex 2 of each triangle
+          for (let i = 0; i < arr.length; i += 9) {
+            for (let j = 0; j < 3; j++) {
+              const temp = arr[i + 3 + j];
+              arr[i + 3 + j] = arr[i + 6 + j];
+              arr[i + 6 + j] = temp;
+            }
+          }
+        }
+      }
+
+      posAttr.needsUpdate = true;
+      geomClone.computeVertexNormals();
+      return geomClone;
+    }
+
+    return geom;
+  }, [shape, w, h, d, flipX, flipY, flipZ]);
 
   return <primitive object={geometry} attach="geometry" />;
 }
 
-// ============================================================================
-// REFERENCE EXAMPLES FOR FUTURE SHAPES (UNSUPPORTED IN CURRENT GAME VERSION)
-// ============================================================================
-/*
-function getSlopeGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
-  const vertices = [
-    [0, 0, 0], // bottom-left-front
-    [w, 0, 0], // bottom-right-front
-    [0, 0, d], // bottom-left-back
-    [w, 0, d], // bottom-right-back
-    [0, h, d], // top-left-back
-    [w, h, d], // top-right-back
-  ];
-  const indices = [
-    0, 2, 3,  0, 3, 1, // bottom face
-    2, 3, 5,  2, 5, 4, // back face
-    0, 4, 2,           // left face (triangle)
-    1, 3, 5,           // right face (triangle)
-    0, 1, 5,  0, 5, 4, // slope face
-  ];
-  
-  const positions: number[] = [];
-  for (const idx of indices) {
-    positions.push(...vertices[idx]);
-  }
-  
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geom.computeVertexNormals();
-  return geom;
-}
-
-function getCornerGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
-  const vertices = [
-    [0, 0, 0], // front-left-bottom
-    [w, 0, 0], // front-right-bottom
-    [0, 0, d], // back-left-bottom
-    [w, 0, d], // back-right-bottom
-    [0, h, d], // back-left-top (apex)
-  ];
-  const indices = [
-    0, 2, 3,  0, 3, 1, // bottom face
-    2, 3, 4,           // back face (triangle)
-    0, 4, 2,           // left face (triangle)
-    0, 1, 4,           // front slope face (triangle)
-    1, 3, 4,           // right slope face (triangle)
-  ];
-  
-  const positions: number[] = [];
-  for (const idx of indices) {
-    positions.push(...vertices[idx]);
-  }
-  
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geom.computeVertexNormals();
-  return geom;
-}
-
-function getPyramidGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
-  const vertices = [
-    [0, 0, 0],   // front-left-bottom
-    [w, 0, 0],   // front-right-bottom
-    [0, 0, d],   // back-left-bottom
-    [w, 0, d],   // back-right-bottom
-    [w / 2, h, d / 2], // center-top (apex)
-  ];
-  const indices = [
-    0, 2, 3,  0, 3, 1, // bottom face
-    0, 1, 4,           // front face (triangle)
-    3, 2, 4,           // back face (triangle)
-    2, 0, 4,           // left face (triangle)
-    1, 3, 4,           // right face (triangle)
-  ];
-  
-  const positions: number[] = [];
-  for (const idx of indices) {
-    positions.push(...vertices[idx]);
-  }
-  
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geom.computeVertexNormals();
-  return geom;
-}
-
-function getCylinderGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
-  const geom = new THREE.CylinderGeometry(1, 1, 1, 32);
-  geom.scale(w / 2, h, d / 2);
-  geom.translate(w / 2, h / 2, d / 2);
-  return geom;
-}
-*/

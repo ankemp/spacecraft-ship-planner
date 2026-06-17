@@ -22,10 +22,18 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
   const movingBlock = useShipStore(s => s.movingBlock);
   const cancelMoveBlock = useShipStore(s => s.cancelMoveBlock);
   const rotateBlock = useShipStore(s => s.rotateBlock);
+  const flipBlock = useShipStore(s => s.flipBlock);
   const setActiveTool = useShipStore(s => s.setActiveTool);
   const startMoveBlock = useShipStore(s => s.startMoveBlock);
   const removeBlock = useShipStore(s => s.removeBlock);
   const nudgeBlock = useShipStore(s => s.nudgeBlock);
+
+  const activeFlipX = useShipStore(s => s.activeFlipX);
+  const activeFlipY = useShipStore(s => s.activeFlipY);
+  const activeFlipZ = useShipStore(s => s.activeFlipZ);
+  const setActiveFlipX = useShipStore(s => s.setActiveFlipX);
+  const setActiveFlipY = useShipStore(s => s.setActiveFlipY);
+  const setActiveFlipZ = useShipStore(s => s.setActiveFlipZ);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -57,11 +65,42 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
         ? BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Thrusters'
         : false;
 
+      const isHull = targetType
+        ? (BLOCK_DEFINITIONS[targetType]?.group === 'Steel' || BLOCK_DEFINITIONS[targetType]?.group === 'Titanium')
+        : false;
+      const isSelectedHull = selectedBlock
+        ? (BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Steel' || BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Titanium')
+        : false;
+
       if (key === 'x') {
-        if (isPlacingOrMoving && isEngine) {
-          setRotation(prev => [(prev[0] + Math.PI / 2) % (Math.PI * 2), prev[1], prev[2]]);
-        } else if (selectedBlockId && !movingBlock && isSelectedEngine) {
-          rotateBlock(selectedBlockId, 'x');
+        if (isPlacingOrMoving) {
+          if (isEngine) {
+            setRotation(prev => [(prev[0] + Math.PI / 2) % (Math.PI * 2), prev[1], prev[2]]);
+          } else if (isHull) {
+            setActiveFlipX(!activeFlipX);
+          }
+        } else if (selectedBlockId && !movingBlock) {
+          if (isSelectedEngine) {
+            rotateBlock(selectedBlockId, 'x');
+          } else if (isSelectedHull) {
+            flipBlock(selectedBlockId, 'x');
+          }
+        }
+      }
+
+      if (key === 'y') {
+        if (isPlacingOrMoving && isHull) {
+          setActiveFlipY(!activeFlipY);
+        } else if (selectedBlockId && !movingBlock && isSelectedHull) {
+          flipBlock(selectedBlockId, 'y');
+        }
+      }
+
+      if (key === 'z') {
+        if (isPlacingOrMoving && isHull) {
+          setActiveFlipZ(!activeFlipZ);
+        } else if (selectedBlockId && !movingBlock && isSelectedHull) {
+          flipBlock(selectedBlockId, 'z');
         }
       }
 
@@ -152,7 +191,14 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
     removeBlock,
     nudgeBlock,
     rotateBlock,
-    setRotation
+    flipBlock,
+    setRotation,
+    activeFlipX,
+    activeFlipY,
+    activeFlipZ,
+    setActiveFlipX,
+    setActiveFlipY,
+    setActiveFlipZ
   ]);
 
   return null;
@@ -172,13 +218,20 @@ export function Scene() {
   const placeMovingBlock = useShipStore(s => s.placeMovingBlock);
   const cancelMoveBlock = useShipStore(s => s.cancelMoveBlock);
 
+  const activeFlipX = useShipStore(s => s.activeFlipX);
+  const activeFlipY = useShipStore(s => s.activeFlipY);
+  const activeFlipZ = useShipStore(s => s.activeFlipZ);
+  const setActiveFlipX = useShipStore(s => s.setActiveFlipX);
+  const setActiveFlipY = useShipStore(s => s.setActiveFlipY);
+  const setActiveFlipZ = useShipStore(s => s.setActiveFlipZ);
+
   const [cursorPos, setCursorPos] = useState<[number, number, number] | null>(null);
   const [cursorNormal, setCursorNormal] = useState<[number, number, number] | null>(null);
   const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
   const [prevMovingBlockId, setPrevMovingBlockId] = useState<string | null>(null);
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Sync rotation state when block is picked up
+  // Sync rotation and flip state when block is picked up
   if (movingBlock && movingBlock.id !== prevMovingBlockId) {
     setPrevMovingBlockId(movingBlock.id);
     setRotation(movingBlock.rotation);
@@ -186,12 +239,26 @@ export function Scene() {
     setPrevMovingBlockId(null);
   }
 
-  // Reset rotation to [0, 0, 0] when active tool changes to prevent stale rotation state from leaking
+  useEffect(() => {
+    if (movingBlock) {
+      setActiveFlipX(movingBlock.flipX || false);
+      setActiveFlipY(movingBlock.flipY || false);
+      setActiveFlipZ(movingBlock.flipZ || false);
+    }
+  }, [movingBlock, setActiveFlipX, setActiveFlipY, setActiveFlipZ]);
+
+  // Reset rotation and flip states when active tool changes to prevent stale states from leaking
   const [prevActiveTool, setPrevActiveTool] = useState(activeTool);
   if (activeTool !== prevActiveTool) {
     setPrevActiveTool(activeTool);
     setRotation([0, 0, 0]);
   }
+
+  useEffect(() => {
+    setActiveFlipX(false);
+    setActiveFlipY(false);
+    setActiveFlipZ(false);
+  }, [activeTool, setActiveFlipX, setActiveFlipY, setActiveFlipZ]);
 
 
 
@@ -372,8 +439,21 @@ export function Scene() {
       {hoverPos && def && (
         <group position={hoverPos} rotation={rotation}>
           <mesh raycast={() => null}>
-            <BlockGeometry shape={ghostShape} w={def.dimensions[0]} h={def.dimensions[1]} d={def.dimensions[2]} />
-            <meshStandardMaterial color={isInvalid ? '#ff0000' : def.color} transparent opacity={0.6} />
+            <BlockGeometry
+              shape={ghostShape}
+              w={def.dimensions[0]}
+              h={def.dimensions[1]}
+              d={def.dimensions[2]}
+              flipX={activeFlipX}
+              flipY={activeFlipY}
+              flipZ={activeFlipZ}
+            />
+            <meshStandardMaterial
+              color={isInvalid ? '#ff0000' : def.color}
+              transparent
+              opacity={0.6}
+              side={THREE.DoubleSide}
+            />
             <Edges color={isInvalid ? 'red' : 'white'} />
           </mesh>
         </group>

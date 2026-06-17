@@ -149,6 +149,7 @@ export function Overlay() {
   const startMoveBlock = useShipStore(s => s.startMoveBlock);
   const updateBlockColor = useShipStore(s => s.updateBlockColor);
   const updateBlockShape = useShipStore(s => s.updateBlockShape);
+  const flipBlock = useShipStore(s => s.flipBlock);
 
   // Long term storage hooks
   const savedShips = useShipStore(s => s.savedShips);
@@ -164,6 +165,18 @@ export function Overlay() {
   const [isSaving, setIsSaving] = useState(false);
   const [editingShipId, setEditingShipId] = useState<string | null>(null);
   const [editingShipName, setEditingShipName] = useState('');
+
+  // Hover states for 3D previews
+  const [hoveredShapeId, setHoveredShapeId] = useState<string | null>(null);
+  const [hoveredModifyShapeId, setHoveredModifyShapeId] = useState<string | null>(null);
+  const [cardMousePos, setCardMousePos] = useState({ x: 0, y: 0 });
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    setCardMousePos({ x, y });
+  };
 
   // Toast state
   const toast = useShipStore(s => s.toast);
@@ -401,14 +414,28 @@ export function Overlay() {
                   <button
                     key={shape.id}
                     onClick={() => setActiveShape(shape.id)}
+                    onMouseEnter={() => setHoveredShapeId(shape.id)}
+                    onMouseMove={handleCardMouseMove}
+                    onMouseLeave={() => {
+                      setHoveredShapeId(null);
+                      setCardMousePos({ x: 0, y: 0 });
+                    }}
                     className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 border border-white/5 cursor-pointer ${isActive
                       ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.15)] scale-105'
                       : 'bg-white/2 text-white/60 hover:text-white hover:bg-white/5 hover:scale-102'
                       }`}
                     title={shape.name}
                   >
-                    <Shape3DPreview shapeId={shape.id} color={activeColor} className="w-full h-8 mb-1 flex-shrink-0" />
-                    <span className="text-[8px] font-semibold truncate max-w-full leading-none">
+                    <Shape3DPreview
+                      shapeId={shape.id}
+                      color={activeColor}
+                      isHovered={hoveredShapeId === shape.id}
+                      anyHovered={hoveredShapeId !== null}
+                      mouseX={hoveredShapeId === shape.id ? cardMousePos.x : 0}
+                      mouseY={hoveredShapeId === shape.id ? cardMousePos.y : 0}
+                      className="w-full h-8 mb-1 flex-shrink-0"
+                    />
+                    <span className="text-[8px] font-semibold truncate max-w-full leading-none pointer-events-none">
                       {shape.name.split(' ')[0]}
                     </span>
                   </button>
@@ -439,10 +466,15 @@ export function Overlay() {
                     : 'bg-white/2 hover:bg-white/6 border-white/5 hover:border-white/10 hover:scale-[1.01] cursor-pointer'
                   }`}
               >
-                <div
-                  className="w-11 h-11 rounded-lg shadow-inner border border-white/15 flex-shrink-0 transition-transform duration-200"
-                  style={{ backgroundColor: def.color }}
-                />
+                <div className="w-11 h-11 rounded-lg bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                  <Shape3DPreview
+                    shapeId={def.group === 'Steel' || def.group === 'Titanium' ? activeShape : 'full'}
+                    color={def.color}
+                    disableRotation={true}
+                    dimensions={def.dimensions}
+                    className="w-full h-full"
+                  />
+                </div>
                 <div className="flex flex-col items-start min-w-0 flex-1">
                   <div className="flex justify-between items-center w-full gap-1.5">
                     <span className="text-xs font-semibold text-white/90 truncate">{def.name}</span>
@@ -873,14 +905,28 @@ export function Overlay() {
                           <button
                             key={shape.id}
                             onClick={() => updateBlockShape(selectedBlock.id, shape.id)}
+                            onMouseEnter={() => setHoveredModifyShapeId(shape.id)}
+                            onMouseMove={handleCardMouseMove}
+                            onMouseLeave={() => {
+                              setHoveredModifyShapeId(null);
+                              setCardMousePos({ x: 0, y: 0 });
+                            }}
                             className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-200 border border-white/10 cursor-pointer ${isActive
                               ? 'bg-blue-500/20 border-blue-500 text-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.2)]'
                               : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 hover:scale-102'
                               }`}
                             title={shape.name}
                           >
-                            <Shape3DPreview shapeId={shape.id} color={selectedBlockColor} className="w-full h-6 mb-1 flex-shrink-0" />
-                            <span className="text-[8px] font-semibold truncate max-w-full leading-none">
+                            <Shape3DPreview
+                              shapeId={shape.id}
+                              color={selectedBlockColor}
+                              isHovered={hoveredModifyShapeId === shape.id}
+                              anyHovered={hoveredModifyShapeId !== null}
+                              mouseX={hoveredModifyShapeId === shape.id ? cardMousePos.x : 0}
+                              mouseY={hoveredModifyShapeId === shape.id ? cardMousePos.y : 0}
+                              className="w-full h-6 mb-1 flex-shrink-0"
+                            />
+                            <span className="text-[8px] font-semibold truncate max-w-full leading-none pointer-events-none">
                               {shape.name.split(' ')[0]}
                             </span>
                           </button>
@@ -889,6 +935,48 @@ export function Overlay() {
                     </div>
                   </div>
                 )}
+
+                {isSelectedHull && (
+                  <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Flip Block</span>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <button
+                        onClick={() => flipBlock(selectedBlock.id, 'x')}
+                        className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center border transition-all duration-205 ${
+                          selectedBlock.flipX
+                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
+                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
+                        }`}
+                        title="Flip X (X Key)"
+                      >
+                        Flip X
+                      </button>
+                      <button
+                        onClick={() => flipBlock(selectedBlock.id, 'y')}
+                        className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center border transition-all duration-205 ${
+                          selectedBlock.flipY
+                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
+                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
+                        }`}
+                        title="Flip Y (Y Key)"
+                      >
+                        Flip Y
+                      </button>
+                      <button
+                        onClick={() => flipBlock(selectedBlock.id, 'z')}
+                        className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center border transition-all duration-205 ${
+                          selectedBlock.flipZ
+                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
+                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
+                        }`}
+                        title="Flip Z (Z Key)"
+                      >
+                        Flip Z
+                      </button>
+                    </div>
+                  </div>
+                )}
+
 
                 <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Block Color</span>
