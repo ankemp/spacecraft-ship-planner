@@ -50,6 +50,10 @@ function PreviewMesh({
         groupRef.current.rotation.y = 0;
         return;
       }
+      
+      // Cap delta to prevent massive jumps/catchup speeds when returning from hidden tabs/minimization
+      const cappedDelta = Math.min(delta, 0.1);
+
       // Capture freeze angle at the exact moment hover starts
       if (anyHovered && !wasAnyHoveredRef.current) {
         freezeAngleRef.current = groupRef.current.rotation.y;
@@ -69,20 +73,20 @@ function PreviewMesh({
         const targetRotX = y * Math.PI * 0.45;
         const targetRotY = freezeAngleRef.current + x * Math.PI * 0.65;
 
-        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, 10 * delta);
-        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 10 * delta);
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, 10 * cappedDelta);
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 10 * cappedDelta);
       } else if (anyHovered) {
         // Someone else is hovered: freeze exactly at freeze angle
-        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, 10 * delta);
-        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, freezeAngleRef.current, 10 * delta);
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, 10 * cappedDelta);
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, freezeAngleRef.current, 10 * cappedDelta);
       } else {
         // Idle/Nobody hovered: spin in circles
-        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, 10 * delta);
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, 10 * cappedDelta);
         
         // Spin Y-rotation continuously (1.2 radians per second)
-        spinAngleRef.current += 1.2 * delta;
+        spinAngleRef.current += 1.2 * cappedDelta;
         
-        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, spinAngleRef.current, 10 * delta);
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, spinAngleRef.current, 10 * cappedDelta);
       }
 
       wasAnyHoveredRef.current = anyHovered;
