@@ -120,7 +120,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   steel_4x3x2: {
     type: 'steel_4x3x2',
     name: 'Steel (4x3x2)',
-    dimensions: [4, 3, 2],
+    dimensions: [4, 2, 3],
     costs: { smallSteelParts: 2, supportHardware: 4 },
     color: '#909090',
     group: 'Steel',
@@ -130,7 +130,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   steel_4x3x1: {
     type: 'steel_4x3x1',
     name: 'Steel (4x3x1)',
-    dimensions: [4, 3, 1],
+    dimensions: [4, 1, 3],
     costs: { smallSteelParts: 2, supportHardware: 2 },
     color: '#909090',
     group: 'Steel',
@@ -140,7 +140,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   steel_6x3x2: {
     type: 'steel_6x3x2',
     name: 'Steel (6x3x2)',
-    dimensions: [6, 3, 2],
+    dimensions: [6, 2, 3],
     costs: { smallSteelParts: 3, supportHardware: 6 },
     color: '#909090',
     group: 'Steel',
@@ -150,7 +150,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   steel_6x3x1: {
     type: 'steel_6x3x1',
     name: 'Steel (6x3x1)',
-    dimensions: [6, 3, 1],
+    dimensions: [6, 1, 3],
     costs: { smallSteelParts: 3, supportHardware: 3 },
     color: '#909090',
     group: 'Steel',
@@ -160,7 +160,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   steel_8x3x2: {
     type: 'steel_8x3x2',
     name: 'Steel (8x3x2)',
-    dimensions: [8, 3, 2],
+    dimensions: [8, 2, 3],
     costs: { smallSteelParts: 4, supportHardware: 8 },
     color: '#909090',
     group: 'Steel',
@@ -170,7 +170,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   steel_8x3x1: {
     type: 'steel_8x3x1',
     name: 'Steel (8x3x1)',
-    dimensions: [8, 3, 1],
+    dimensions: [8, 1, 3],
     costs: { smallSteelParts: 4, supportHardware: 4 },
     color: '#909090',
     group: 'Steel',
@@ -180,7 +180,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_4x3x1: {
     type: 'titanium_4x3x1',
     name: 'Titanium (4x3x1)',
-    dimensions: [4, 3, 1],
+    dimensions: [4, 1, 3],
     costs: { smallTitaniumParts: 2, supportHardware: 2 },
     color: '#7a919e',
     group: 'Titanium',
@@ -190,7 +190,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_4x3x2: {
     type: 'titanium_4x3x2',
     name: 'Titanium (4x3x2)',
-    dimensions: [4, 3, 2],
+    dimensions: [4, 2, 3],
     costs: { smallTitaniumParts: 2, supportHardware: 4 },
     color: '#7a919e',
     group: 'Titanium',
@@ -200,7 +200,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_6x3x1: {
     type: 'titanium_6x3x1',
     name: 'Titanium (6x3x1)',
-    dimensions: [6, 3, 1],
+    dimensions: [6, 1, 3],
     costs: { smallTitaniumParts: 3, supportHardware: 3 },
     color: '#7a919e',
     group: 'Titanium',
@@ -210,7 +210,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_6x3x2: {
     type: 'titanium_6x3x2',
     name: 'Titanium (6x3x2)',
-    dimensions: [6, 3, 2],
+    dimensions: [6, 2, 3],
     costs: { smallTitaniumParts: 3, supportHardware: 6 },
     color: '#7a919e',
     group: 'Titanium',
@@ -220,7 +220,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_8x3x1: {
     type: 'titanium_8x3x1',
     name: 'Titanium (8x3x1)',
-    dimensions: [8, 3, 1],
+    dimensions: [8, 1, 3],
     costs: { smallTitaniumParts: 4, supportHardware: 4 },
     color: '#7a919e',
     group: 'Titanium',
@@ -230,7 +230,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_8x3x2: {
     type: 'titanium_8x3x2',
     name: 'Titanium (8x3x2)',
-    dimensions: [8, 3, 2],
+    dimensions: [8, 2, 3],
     costs: { smallTitaniumParts: 4, supportHardware: 8 },
     color: '#7a919e',
     group: 'Titanium',
@@ -240,7 +240,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_8x6x2: {
     type: 'titanium_8x6x2',
     name: 'Titanium (8x6x2)',
-    dimensions: [8, 6, 2],
+    dimensions: [8, 2, 6],
     costs: { titaniumParts: 4, supportHardware: 8 },
     color: '#7a919e',
     group: 'Titanium',
@@ -250,7 +250,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_12x6x2: {
     type: 'titanium_12x6x2',
     name: 'Titanium (12x6x2)',
-    dimensions: [12, 6, 2],
+    dimensions: [12, 2, 6],
     costs: { titaniumParts: 3, supportHardware: 12 },
     color: '#7a919e',
     group: 'Titanium',
@@ -260,7 +260,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   titanium_16x6x2: {
     type: 'titanium_16x6x2',
     name: 'Titanium (16x6x2)',
-    dimensions: [16, 6, 2],
+    dimensions: [16, 2, 6],
     costs: { titaniumParts: 4, supportHardware: 16 },
     color: '#7a919e',
     group: 'Titanium',
@@ -312,7 +312,6 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   //   stats: {
   //     weight: 20,
   //     systemRequirements: 450,
-  //     heatInterface: 0, // TODO
   //     materialHeatConductivity: 40,
   //     force: 600,
   //     thrust: 50,
@@ -332,7 +331,6 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   //   stats: {
   //     weight: 20,
   //     systemRequirements: 600,
-  //     heatInterface: 0, // TODO
   //     materialHeatConductivity: 120,
   //     force: 600,
   //     thrust: 100,
@@ -352,7 +350,6 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   //   stats: {
   //     weight: 20,
   //     systemRequirements: 1100,
-  //     heatInterface: 0, // TODO
   //     materialHeatConductivity: 0, // TODO
   //     force: 1250,
   //     thrust: 150,
@@ -366,7 +363,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   cockpit_pathfinder: {
     type: 'cockpit_pathfinder',
     name: 'Pathfinder Cockpit',
-    dimensions: [2, 2, 2],
+    dimensions: [3, 2, 3],
     costs: undefined,
     color: '#2288ff',
     group: 'Cockpits',
