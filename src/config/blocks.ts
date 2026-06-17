@@ -274,7 +274,6 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#d35400',
     group: 'Thrusters',
     stats: {
-      weight: 20,
       systemRequirements: 300,
       materialHeatConductivity: 60,
       force: 300,
@@ -303,25 +302,24 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
   //     steeringStrength: 15,
   //   }
   // },
-  // thruster_voidseeker: {
-  //   type: 'thruster_voidseeker',
-  //   name: 'Voidseeker',
-  //   dimensions: [1, 1, 1],
-  //   color: '#d35400',
-  //   group: 'Thrusters',
-  //   stats: {
-  //     weight: 20,
-  //     systemRequirements: 450,
-  //     materialHeatConductivity: 40,
-  //     force: 600,
-  //     thrust: 50,
-  //     powerConsumption: 70,
-  //     steeringStrength: 20,
-  //     boostThrust: 80,
-  //     boostPowerConsumption: 80,
-  //     boostHeatGeneration: 800
-  //   }
-  // },
+  thruster_voidseeker: {
+    type: 'thruster_voidseeker',
+    name: 'Voidseeker',
+    dimensions: [5, 2, 3],
+    color: '#d35400',
+    group: 'Thrusters',
+    stats: {
+      systemRequirements: 450,
+      materialHeatConductivity: 40,
+      force: 600,
+      thrust: 50,
+      powerConsumption: 70,
+      steeringStrength: 20,
+      boostThrust: 80,
+      boostPowerConsumption: 80,
+      boostHeatGeneration: 800
+    }
+  },
   // thruster_grasshopper: {
   //   type: 'thruster_grasshopper',
   //   name: 'Grasshopper',
