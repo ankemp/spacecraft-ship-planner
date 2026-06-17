@@ -267,26 +267,25 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     plannerPartName: 'hull_mk_2_006_tit',
     stats: { systemSupport: 960, frame: 512, weight: 128, hull: 40, heatCapacity: 176, materialHeatConductivity: 60 }
   },
-  // thruster_cart_pusher: {
-  //   type: 'thruster_cart_pusher',
-  //   name: 'Cart Pusher',
-  //   dimensions: [1, 1, 1],
-  //   color: '#d35400',
-  //   group: 'Thrusters',
-  //   stats: {
-  //     weight: 20,
-  //     systemRequirements: 300,
-  //     heatInterface: 0, // TODO
-  //     materialHeatConductivity: 60,
-  //     force: 300,
-  //     thrust: 50,
-  //     powerConsumption: 35,
-  //     steeringStrength: 8,
-  //     boostThrust: 100,
-  //     boostPowerConsumption: 100,
-  //     boostHeatGeneration: 1000
-  //   }
-  // },
+  thruster_cart_pusher: {
+    type: 'thruster_cart_pusher',
+    name: 'Cart Pusher',
+    dimensions: [4, 3, 1],
+    color: '#d35400',
+    group: 'Thrusters',
+    stats: {
+      weight: 20,
+      systemRequirements: 300,
+      materialHeatConductivity: 60,
+      force: 300,
+      thrust: 50,
+      powerConsumption: 35,
+      steeringStrength: 8,
+      boostThrust: 100,
+      boostPowerConsumption: 100,
+      boostHeatGeneration: 1000
+    }
+  },
   // thruster_quiet_breeze: {
   //   type: 'thruster_quiet_breeze',
   //   name: 'Quiet Breeze',
