@@ -167,6 +167,63 @@ export function Overlay() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
   const [showHotkeys, setShowHotkeys] = useState(false);
 
+  // Collapsible panels states
+  const [isBomCollapsed, setIsBomCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('spacecraft_sidebar_bom_collapsed') === 'true';
+  });
+  const [isSpecsCollapsed, setIsSpecsCollapsed] = useState<boolean>(() => {
+    // Specs starts collapsed by default to save space!
+    return localStorage.getItem('spacecraft_sidebar_specs_collapsed') !== 'false'; 
+  });
+  const [isInspectorCollapsed, setIsInspectorCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('spacecraft_sidebar_inspector_collapsed') === 'true';
+  });
+  const [isStorageCollapsed, setIsStorageCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('spacecraft_sidebar_storage_collapsed') === 'true';
+  });
+
+  const toggleBom = () => {
+    setIsBomCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('spacecraft_sidebar_bom_collapsed', String(next));
+      return next;
+    });
+  };
+
+  const toggleSpecs = () => {
+    setIsSpecsCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('spacecraft_sidebar_specs_collapsed', String(next));
+      return next;
+    });
+  };
+
+  const toggleInspector = () => {
+    setIsInspectorCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('spacecraft_sidebar_inspector_collapsed', String(next));
+      return next;
+    });
+  };
+
+  const toggleStorage = () => {
+    setIsStorageCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('spacecraft_sidebar_storage_collapsed', String(next));
+      return next;
+    });
+  };
+
+  const activeBomItemsCount = [smallSteelParts, smallTitaniumParts, titaniumParts, supportHardware].filter(v => v > 0).length;
+
+  const getFlightStatus = () => {
+    if (blocks.length === 0) return { label: 'Empty', color: 'text-white/40', dotColor: 'bg-white/30' };
+    if (totalForce === 0) return { label: 'No Engines', color: 'text-amber-400', dotColor: 'bg-amber-400' };
+    if (totalForce <= totalWeight) return { label: 'Overloaded', color: 'text-red-400', dotColor: 'bg-red-400 animate-pulse' };
+    return { label: 'Flight Capable', color: 'text-emerald-400', dotColor: 'bg-emerald-400' };
+  };
+  const flightStatus = getFlightStatus();
+
   const showToast = (message: string) => {
     setToast(message);
   };
@@ -387,196 +444,299 @@ export function Overlay() {
 
         {/* BOM Card */}
         <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
-          <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px] mb-4">Bill of Materials</h2>
-          <div className="grid grid-cols-2 gap-2.5">
-            {[
-              { label: 'Small Steel Parts', value: smallSteelParts, color: 'text-blue-400' },
-              { label: 'Small Titanium Parts', value: smallTitaniumParts, color: 'text-teal-400' },
-              { label: 'Titanium Parts', value: titaniumParts, color: 'text-cyan-400' },
-              { label: 'Support Hardware', value: supportHardware, color: 'text-orange-400' }
-            ].map(item => {
-              const isZero = item.value === 0;
-              return (
-                <div
-                  key={item.label}
-                  className={`flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200 min-w-0 ${
-                    isZero
-                      ? 'bg-white/[0.01] border border-white/5 opacity-40'
-                      : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10'
-                  }`}
-                >
-                  <span className={`text-[10px] uppercase font-bold tracking-wider truncate w-full transition-colors ${isZero ? 'text-white/20' : 'text-white/40'}`}>
-                    {item.label}
-                  </span>
-                  <span className={`text-lg font-extrabold transition-colors ${isZero ? 'text-white/20' : item.color}`}>
-                    {item.value}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-4">
-            {hasPlannerParts ? (
-              <a
-                href={plannerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 hover:scale-102 active:scale-98 cursor-pointer"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                </svg>
-                Export to Planner
-              </a>
-            ) : (
-              <button
-                disabled
-                className="w-full py-2.5 bg-white/5 text-white/30 border border-white/5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-not-allowed"
-              >
-                <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                </svg>
-                Export to Planner
-              </button>
-            )}
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-white/10 flex gap-2">
-            <button
-              onClick={() => {
-                const url = window.location.origin + window.location.pathname + '?ship=' + serializeBlocks(blocks);
-                navigator.clipboard.writeText(url);
-                window.history.replaceState(null, '', url);
-                showToast("Share link copied to clipboard!");
-              }}
-              disabled={blocks.length === 0}
-              className="flex-1 py-2.5 bg-blue-500/10 hover:bg-blue-500/20 disabled:opacity-40 disabled:hover:bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl text-xs font-bold transition-all disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5"
-              title="Copy Share Link"
+          <button
+            onClick={toggleBom}
+            className="w-full flex justify-between items-center text-left cursor-pointer focus:outline-none group/header"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-white/60 font-bold uppercase tracking-widest text-[10px] group-hover/header:text-blue-400 transition-colors">
+                [SYS-01] BILL OF MATERIALS
+              </span>
+              {isBomCollapsed && blocks.length > 0 && (
+                <span className="text-[9px] text-blue-400/80 font-bold font-mono bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                  {blocks.length} {blocks.length === 1 ? 'BLOCK' : 'BLOCKS'} ({activeBomItemsCount} {activeBomItemsCount === 1 ? 'TYPE' : 'TYPES'})
+                </span>
+              )}
+            </div>
+            
+            <svg
+              className={`w-3.5 h-3.5 text-white/40 transition-transform duration-300 ${isBomCollapsed ? '-rotate-90' : 'rotate-0'}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2.5"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935-2.186 2.25 2.25 0 00-3.935 2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-              </svg>
-              Share Link
-            </button>
-            <button onClick={clearShip} className="flex-1 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-bold transition-colors border border-red-500/20 cursor-pointer">
-              Clear Ship
-            </button>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </button>
+
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isBomCollapsed ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[500px] opacity-100 mt-4'}`}>
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { label: 'Small Steel Parts', value: smallSteelParts, color: 'text-blue-400' },
+                { label: 'Small Titanium Parts', value: smallTitaniumParts, color: 'text-teal-400' },
+                { label: 'Titanium Parts', value: titaniumParts, color: 'text-cyan-400' },
+                { label: 'Support Hardware', value: supportHardware, color: 'text-orange-400' }
+              ].map(item => {
+                const isZero = item.value === 0;
+                return (
+                  <div
+                    key={item.label}
+                    className={`flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200 min-w-0 ${
+                      isZero
+                        ? 'bg-white/[0.01] border border-white/5 opacity-40'
+                        : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10'
+                    }`}
+                  >
+                    <span className={`text-[10px] uppercase font-bold tracking-wider truncate w-full transition-colors ${isZero ? 'text-white/20' : 'text-white/40'}`}>
+                      {item.label}
+                    </span>
+                    <span className={`text-lg font-extrabold transition-colors ${isZero ? 'text-white/20' : item.color}`}>
+                      {item.value}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4">
+              {hasPlannerParts ? (
+                <a
+                  href={plannerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 hover:scale-102 active:scale-98 cursor-pointer"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                  Export to Planner
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="w-full py-2.5 bg-white/5 text-white/30 border border-white/5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                  Export to Planner
+                </button>
+              )}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-white/10 flex gap-2">
+              <button
+                onClick={() => {
+                  const url = window.location.origin + window.location.pathname + '?ship=' + serializeBlocks(blocks);
+                  navigator.clipboard.writeText(url);
+                  window.history.replaceState(null, '', url);
+                  showToast("Share link copied to clipboard!");
+                }}
+                disabled={blocks.length === 0}
+                className="flex-1 py-2.5 bg-blue-500/10 hover:bg-blue-500/20 disabled:opacity-40 disabled:hover:bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl text-xs font-bold transition-all disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5"
+                title="Copy Share Link"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935-2.186 2.25 2.25 0 00-3.935 2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                </svg>
+                Share Link
+              </button>
+              <button onClick={clearShip} className="flex-1 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-bold transition-colors border border-red-500/20 cursor-pointer">
+                Clear Ship
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Spacecraft Stats Card */}
-        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Specs</h2>
-            {customOrder.length > 0 && (
-              <button
-                onClick={resetToDefaultOrder}
-                className="text-[10px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider cursor-pointer transition-colors"
-              >
-                Reset Order
-              </button>
-            )}
-          </div>
-
-          {/* Flight Readiness Warning */}
-          {blocks.length > 0 && (
-            totalForce === 0 ? (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-amber-400">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-bold">No Engines Installed</span>
-                  <span className="text-white/60 leading-normal">Your ship has no engines. Add thrusters from the Thrusters palette to enable movement.</span>
-                </div>
-              </div>
-            ) : totalForce <= totalWeight ? (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-red-400 animate-pulse">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-bold">Insufficient Force</span>
-                  <span className="text-white/60 leading-normal">Total force ({totalForce.toFixed(1)}t) must be higher than total weight ({totalWeight.toFixed(1)}t). Add more thrusters or reduce weight.</span>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-emerald-400">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-bold">Flight Capable</span>
-                  <span className="text-white/60 leading-normal">The ship has sufficient thrust to fly. Total force ({totalForce.toFixed(1)}t) exceeds weight ({totalWeight.toFixed(1)}t).</span>
-                </div>
-              </div>
-            )
-          )}
-
-          <div className="grid grid-cols-2 gap-2.5">
-            {allStatKeys.map(key => {
-              const value = shipStats[key] || 0;
-              const meta = STAT_METADATA[key];
-              const name = meta?.name || formatStatKey(key);
-              const unit = meta?.unit || '';
-              const colorClass = meta?.color || 'text-blue-400';
-              const icon = meta?.icon;
-
-              const isDragging = draggedKey === key;
-              const isDragOver = dragOverKey === key;
-
-              return (
-                <div
-                  key={key}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, key)}
-                  onDragEnter={(e) => handleDragEnter(e, key)}
-                  onDragOver={handleDragOver}
-                  onDragLeave={(e) => handleDragLeave(e, key)}
-                  onDrop={(e) => handleDrop(e, key)}
-                  onDragEnd={handleDragEnd}
-                  className={`group flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200 min-w-0 cursor-grab active:cursor-grabbing select-none relative ${isDragging
-                    ? 'opacity-30 border border-blue-500/30 bg-white/[0.01]'
-                    : isDragOver
-                      ? 'bg-blue-500/10 border border-blue-500 scale-[1.02] shadow-[0_0_15px_rgba(59,130,246,0.3)] z-10'
-                      : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10'
-                    }`}
-                >
-                  <div className="flex items-center justify-between gap-1.5 min-w-0 pointer-events-none">
-                    <div className="flex items-center gap-1.5 text-white/40 text-[10px] uppercase font-bold tracking-wider min-w-0">
-                      <span className={`${colorClass} flex-shrink-0`}>
-                        <StatIcon iconType={icon} />
-                      </span>
-                      <span className="truncate w-full">{name}</span>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
-                      <GripIcon />
-                    </div>
-                  </div>
-                  <div className="text-lg font-extrabold text-white flex items-baseline gap-0.5 pointer-events-none">
-                    <span>{value}</span>
-                    {unit && <span className={`text-[10px] font-semibold ${colorClass} ml-0.5`}>{unit}</span>}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Selected Block Card */}
-        {selectedBlock && (
-          <div className="bg-black/80 backdrop-blur-xl p-5 rounded-2xl border border-blue-500/30 flex flex-col gap-4 animate-in fade-in slide-in-from-right-5 duration-300">
-            <div className="flex justify-between items-center border-b border-white/10 pb-2 flex-shrink-0">
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-blue-400">Selected Block</span>
-                <span className="text-sm font-bold text-white truncate w-full">
-                  {BLOCK_DEFINITIONS[selectedBlock.type]?.name || selectedBlock.type}
+        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
+          <button
+            onClick={toggleSpecs}
+            className="w-full flex justify-between items-center text-left cursor-pointer focus:outline-none group/header"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-white/60 font-bold uppercase tracking-widest text-[10px] group-hover/header:text-blue-400 transition-colors">
+                [SYS-02] TELEMETRY SPECS
+              </span>
+              <div className="flex items-center gap-1.5 ml-1">
+                <span className={`w-1.5 h-1.5 rounded-full ${flightStatus.dotColor}`} />
+                <span className={`text-[9px] uppercase font-bold tracking-wider ${flightStatus.color}`}>
+                  {flightStatus.label}
                 </span>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-white/40 group-hover/header:text-white transition-colors">
+              {customOrder.length > 0 && !isSpecsCollapsed && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    resetToDefaultOrder();
+                  }}
+                  className="text-[10px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider cursor-pointer transition-colors mr-2 font-mono"
+                >
+                  RESET_ORDER
+                </button>
+              )}
+              <svg
+                className={`w-3.5 h-3.5 text-white/40 transition-transform duration-300 ${isSpecsCollapsed ? '-rotate-90' : 'rotate-0'}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </button>
+
+          {/* Key Telemetry Summary row when collapsed */}
+          {isSpecsCollapsed && blocks.length > 0 && (
+            <div className="mt-2.5 pt-2 border-t border-white/5 grid grid-cols-3 gap-1.5 text-[10px] text-white/60 font-mono animate-in fade-in duration-200">
+              <div className="flex flex-col">
+                <span className="text-[8px] uppercase tracking-wider text-white/30 font-semibold font-sans">Support</span>
+                <span className="text-blue-400 font-bold truncate">
+                  {shipStats.systemRequirements || 0}/{shipStats.systemSupport || 0} <span className="text-[8px] font-normal text-blue-400/60">SP</span>
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[8px] uppercase tracking-wider text-white/30 font-semibold font-sans">Force/Weight</span>
+                <span className="text-indigo-400 font-bold truncate">
+                  {totalForce.toFixed(0)}/{totalWeight.toFixed(0)}<span className="text-[8px] font-normal text-indigo-400/60">t</span>
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[8px] uppercase tracking-wider text-white/30 font-semibold font-sans">Power Cons.</span>
+                <span className="text-yellow-400 font-bold truncate">
+                  {shipStats.powerConsumption || 0}<span className="text-[8px] font-normal text-yellow-400/60">kW</span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Expanded detailed stats list */}
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col gap-4 ${isSpecsCollapsed ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[800px] opacity-100 mt-4'}`}>
+            {/* Flight Readiness Warning */}
+            {blocks.length > 0 && (
+              totalForce === 0 ? (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-amber-400">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-bold">No Engines Installed</span>
+                    <span className="text-white/60 leading-normal">Your ship has no engines. Add thrusters from the Thrusters palette to enable movement.</span>
+                  </div>
+                </div>
+              ) : totalForce <= totalWeight ? (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-red-400 animate-pulse">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-bold">Insufficient Force</span>
+                    <span className="text-white/60 leading-normal">Total force ({totalForce.toFixed(1)}t) must be higher than total weight ({totalWeight.toFixed(1)}t). Add more thrusters or reduce weight.</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex gap-2.5 text-xs text-emerald-400">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-bold">Flight Capable</span>
+                    <span className="text-white/60 leading-normal">The ship has sufficient thrust to fly. Total force ({totalForce.toFixed(1)}t) exceeds weight ({totalWeight.toFixed(1)}t).</span>
+                  </div>
+                </div>
+              )
+            )}
+
+            <div className="grid grid-cols-2 gap-2.5">
+              {allStatKeys.map(key => {
+                const value = shipStats[key] || 0;
+                const meta = STAT_METADATA[key];
+                const name = meta?.name || formatStatKey(key);
+                const unit = meta?.unit || '';
+                const colorClass = meta?.color || 'text-blue-400';
+                const icon = meta?.icon;
+
+                const isDragging = draggedKey === key;
+                const isDragOver = dragOverKey === key;
+
+                return (
+                  <div
+                    key={key}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, key)}
+                    onDragEnter={(e) => handleDragEnter(e, key)}
+                    onDragOver={handleDragOver}
+                    onDragLeave={(e) => handleDragLeave(e, key)}
+                    onDrop={(e) => handleDrop(e, key)}
+                    onDragEnd={handleDragEnd}
+                    className={`group flex flex-col gap-1.5 p-3 rounded-xl transition-all duration-200 min-w-0 cursor-grab active:cursor-grabbing select-none relative ${isDragging
+                      ? 'opacity-30 border border-blue-500/30 bg-white/[0.01]'
+                      : isDragOver
+                        ? 'bg-blue-500/10 border border-blue-500 scale-[1.02] shadow-[0_0_15px_rgba(59,130,246,0.3)] z-10'
+                        : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between gap-1.5 min-w-0 pointer-events-none">
+                      <div className="flex items-center gap-1.5 text-white/40 text-[10px] uppercase font-bold tracking-wider min-w-0">
+                        <span className={`${colorClass} flex-shrink-0`}>
+                          <StatIcon iconType={icon} />
+                        </span>
+                        <span className="truncate w-full">{name}</span>
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+                        <GripIcon />
+                      </div>
+                    </div>
+                    <div className="text-lg font-extrabold text-white flex items-baseline gap-0.5 pointer-events-none">
+                      <span>{value}</span>
+                      {unit && <span className={`text-[10px] font-semibold ${colorClass} ml-0.5`}>{unit}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        {/* Selected Block Card */}
+        {selectedBlock && (
+          <div className="bg-black/80 backdrop-blur-xl p-5 rounded-2xl border border-blue-500/30 animate-in fade-in slide-in-from-right-5 duration-300">
+            {/* Header */}
+            <div className="flex justify-between items-center border-b border-white/10 pb-2 flex-shrink-0 gap-2">
+              <button
+                onClick={toggleInspector}
+                className="flex-1 flex items-center justify-between text-left cursor-pointer focus:outline-none group/inspector-header min-w-0"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-white/60 font-bold uppercase tracking-widest text-[10px] group-hover/inspector-header:text-blue-300 transition-colors">
+                    [SYS-03] BLOCK INSPECTOR
+                  </span>
+                  {isInspectorCollapsed && (
+                    <span className="text-[9px] text-blue-400/80 font-bold font-mono bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 truncate max-w-[130px]" title={BLOCK_DEFINITIONS[selectedBlock.type]?.name || selectedBlock.type}>
+                      {(BLOCK_DEFINITIONS[selectedBlock.type]?.name || selectedBlock.type).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                
+                <svg
+                  className={`w-3.5 h-3.5 text-white/40 transition-transform duration-300 ${isInspectorCollapsed ? '-rotate-90' : 'rotate-0'} mr-1`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+              
               <button
                 onClick={() => setSelectedBlockId(null)}
                 className="p-1 hover:bg-white/10 rounded text-white/60 hover:text-white cursor-pointer flex-shrink-0"
+                title="Deselect Block"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -584,306 +744,353 @@ export function Overlay() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-white/5 p-2 rounded border border-white/5">
-                <span className="text-white/40 block text-[9px] uppercase font-semibold">Position</span>
-                <span className="text-white/90 font-mono font-medium">
-                  {selectedBlock.position.join(', ')}
-                </span>
+            {/* Collapsed Position/Rotation summary */}
+            {isInspectorCollapsed && (
+              <div className="mt-2.5 pt-2 border-t border-white/5 flex justify-between items-center text-[10px] text-white/60 font-mono animate-in fade-in duration-200">
+                <span>Pos: [{selectedBlock.position.join(', ')}]</span>
+                <span>Rot: [{selectedBlock.rotation.map(r => Math.round(r * 180 / Math.PI)).join('°, ')}°]</span>
               </div>
-              <div className="bg-white/5 p-2 rounded border border-white/5">
-                <span className="text-white/40 block text-[9px] uppercase font-semibold">Rotation</span>
-                <span className="text-white/90 font-mono font-medium">
-                  {selectedBlock.rotation.map(r => Math.round(r * 180 / Math.PI)).join('°, ')}°
-                </span>
+            )}
+
+            {/* Detailed Controls */}
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col gap-4 ${isInspectorCollapsed ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[600px] opacity-100 mt-4'}`}>
+              <div className="text-sm font-bold text-white truncate w-full -mt-2">
+                {BLOCK_DEFINITIONS[selectedBlock.type]?.name || selectedBlock.type}
               </div>
-            </div>
 
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => startMoveBlock(selectedBlock.id)}
-                className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 hover:scale-102 cursor-pointer"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 3.75H6A2.25 2.25 0 003.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0120.25 6v1.5m0 9V18a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-                Move Block (M)
-              </button>
-
-              <div className="flex flex-col gap-1.5 mt-1">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Nudge Block</span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <button
-                    onClick={() => nudgeBlock(selectedBlock.id, [-1, 0, 0])}
-                    className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Nudge X-"
-                  >
-                    X-
-                  </button>
-                  <button
-                    onClick={() => nudgeBlock(selectedBlock.id, [1, 0, 0])}
-                    className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Nudge X+"
-                  >
-                    X+
-                  </button>
-
-                  <button
-                    onClick={() => nudgeBlock(selectedBlock.id, [0, -1, 0])}
-                    className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Nudge Y- (Shift+Down)"
-                  >
-                    Y-
-                  </button>
-                  <button
-                    onClick={() => nudgeBlock(selectedBlock.id, [0, 1, 0])}
-                    className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Nudge Y+ (Shift+Up)"
-                  >
-                    Y+
-                  </button>
-
-                  <button
-                    onClick={() => nudgeBlock(selectedBlock.id, [0, 0, -1])}
-                    className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Nudge Z- (Up Arrow)"
-                  >
-                    Z-
-                  </button>
-                  <button
-                    onClick={() => nudgeBlock(selectedBlock.id, [0, 0, 1])}
-                    className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Nudge Z+"
-                  >
-                    Z+
-                  </button>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-white/5 p-2 rounded border border-white/5">
+                  <span className="text-white/40 block text-[9px] uppercase font-semibold">Position</span>
+                  <span className="text-white/90 font-mono font-medium">
+                    {selectedBlock.position.join(', ')}
+                  </span>
+                </div>
+                <div className="bg-white/5 p-2 rounded border border-white/5">
+                  <span className="text-white/40 block text-[9px] uppercase font-semibold">Rotation</span>
+                  <span className="text-white/90 font-mono font-medium">
+                    {selectedBlock.rotation.map(r => Math.round(r * 180 / Math.PI)).join('°, ')}°
+                  </span>
                 </div>
               </div>
 
-              {BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Thrusters' && (
-                <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Orientation</span>
-                  <div className="grid grid-cols-1 gap-1.5">
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => startMoveBlock(selectedBlock.id)}
+                  className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 hover:scale-102 cursor-pointer"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 3.75H6A2.25 2.25 0 003.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0120.25 6v1.5m0 9V18a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                  Move Block (M)
+                </button>
+
+                <div className="flex flex-col gap-1.5 mt-1">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Nudge Block</span>
+                  <div className="grid grid-cols-2 gap-1.5">
                     <button
-                      onClick={() => rotateBlock(selectedBlock.id, 'x')}
-                      className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center"
-                      title="Flip X (X Key)"
+                      onClick={() => nudgeBlock(selectedBlock.id, [-1, 0, 0])}
+                      className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
+                      title="Nudge X-"
                     >
-                      Flip X
+                      X-
+                    </button>
+                    <button
+                      onClick={() => nudgeBlock(selectedBlock.id, [1, 0, 0])}
+                      className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
+                      title="Nudge X+"
+                    >
+                      X+
+                    </button>
+
+                    <button
+                      onClick={() => nudgeBlock(selectedBlock.id, [0, -1, 0])}
+                      className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
+                      title="Nudge Y- (Shift+Down)"
+                    >
+                      Y-
+                    </button>
+                    <button
+                      onClick={() => nudgeBlock(selectedBlock.id, [0, 1, 0])}
+                      className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
+                      title="Nudge Y+ (Shift+Up)"
+                    >
+                      Y+
+                    </button>
+
+                    <button
+                      onClick={() => nudgeBlock(selectedBlock.id, [0, 0, -1])}
+                      className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
+                      title="Nudge Z- (Up Arrow)"
+                    >
+                      Z-
+                    </button>
+                    <button
+                      onClick={() => nudgeBlock(selectedBlock.id, [0, 0, 1])}
+                      className="py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
+                      title="Nudge Z+"
+                    >
+                      Z+
                     </button>
                   </div>
                 </div>
-              )}
 
-              <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Block Color</span>
-                <div className="flex items-center gap-2">
-                  <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-all">
-                    <input
-                      type="color"
-                      value={selectedBlock.color || BLOCK_DEFINITIONS[selectedBlock.type]?.color || '#ffffff'}
-                      onChange={(e) => updateBlockColor(selectedBlock.id, e.target.value)}
-                      className="absolute inset-0 w-[200%] h-[200%] -translate-x-1/4 -translate-y-1/4 cursor-pointer"
-                    />
+                {BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Thrusters' && (
+                  <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Orientation</span>
+                    <div className="grid grid-cols-1 gap-1.5">
+                      <button
+                        onClick={() => rotateBlock(selectedBlock.id, 'x')}
+                        className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center"
+                        title="Flip X (X Key)"
+                      >
+                        Flip X
+                      </button>
+                    </div>
                   </div>
+                )}
+
+                <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Block Color</span>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-all">
+                      <input
+                        type="color"
+                        value={selectedBlock.color || BLOCK_DEFINITIONS[selectedBlock.type]?.color || '#ffffff'}
+                        onChange={(e) => updateBlockColor(selectedBlock.id, e.target.value)}
+                        className="absolute inset-0 w-[200%] h-[200%] -translate-x-1/4 -translate-y-1/4 cursor-pointer"
+                      />
+                    </div>
+                    <button
+                      onClick={() => updateBlockColor(selectedBlock.id, undefined)}
+                      disabled={!selectedBlock.color}
+                      className="px-2.5 py-1 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-white/5 text-[10px] text-white/80 hover:text-white border border-white/10 rounded-lg transition-all cursor-pointer font-semibold disabled:cursor-not-allowed"
+                    >
+                      Reset to Default
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mt-2 border-t border-white/10 pt-3">
                   <button
-                    onClick={() => updateBlockColor(selectedBlock.id, undefined)}
-                    disabled={!selectedBlock.color}
-                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-white/5 text-[10px] text-white/80 hover:text-white border border-white/10 rounded-lg transition-all cursor-pointer font-semibold disabled:cursor-not-allowed"
+                    onClick={() => removeBlock(selectedBlock.id)}
+                    className="flex-1 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                   >
-                    Reset to Default
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setSelectedBlockId(null)}
+                    className="flex-1 py-2 bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Deselect
                   </button>
                 </div>
-              </div>
-
-              <div className="flex gap-2 mt-2 border-t border-white/10 pt-3">
-                <button
-                  onClick={() => removeBlock(selectedBlock.id)}
-                  className="flex-1 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                >
-                  Delete
-                </button>
-                <button
-                  onClick={() => setSelectedBlockId(null)}
-                  className="flex-1 py-2 bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                >
-                  Deselect
-                </button>
               </div>
             </div>
           </div>
         )}
 
         {/* Blueprint Storage Card */}
-        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10 flex flex-col gap-3">
-          <h2 className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Ship Storage</h2>
+        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/10">
+          <button
+            onClick={toggleStorage}
+            className="w-full flex justify-between items-center text-left cursor-pointer focus:outline-none group/header"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-white/60 font-bold uppercase tracking-widest text-[10px] group-hover/header:text-blue-400 transition-colors">
+                [SYS-04] SHIP STORAGE
+              </span>
+              {isStorageCollapsed && savedShips.length > 0 && (
+                <span className="text-[9px] text-blue-400/80 font-bold font-mono bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 animate-in zoom-in-95 duration-100">
+                  {savedShips.length} {savedShips.length === 1 ? 'BLUEPRINT' : 'BLUEPRINTS'}
+                </span>
+              )}
+            </div>
+            
+            <svg
+              className={`w-3.5 h-3.5 text-white/40 transition-transform duration-300 ${isStorageCollapsed ? '-rotate-90' : 'rotate-0'}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </button>
 
-          {/* Saved Ships List */}
-          <div className="max-h-52 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-            {savedShips.length === 0 ? (
-              <div className="text-center py-6 text-white/40 text-xs border border-dashed border-white/10 rounded-xl bg-white/2">
-                No saved blueprints.
-              </div>
-            ) : (
-              savedShips.map(ship => (
-                <div key={ship.id} className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/8 transition-all duration-300">
-                  <div className="flex justify-between items-center gap-2">
-                    {editingShipId === ship.id ? (
-                      <div className="flex items-center gap-1.5 w-full">
-                        <input
-                          type="text"
-                          value={editingShipName}
-                          onChange={(e) => setEditingShipName(e.target.value)}
-                          className="flex-1 min-w-0 bg-black/40 border border-white/20 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-blue-400"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveRename(ship.id);
-                            if (e.key === 'Escape') setEditingShipId(null);
-                          }}
-                          autoFocus
-                        />
-                        <button
-                          onClick={() => handleSaveRename(ship.id)}
-                          className="p-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-400 rounded-md cursor-pointer"
-                          title="Save"
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => setEditingShipId(null)}
-                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-md cursor-pointer"
-                          title="Cancel"
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="text-xs font-bold text-white truncate max-w-[150px]">{ship.name}</span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => {
-                              setEditingShipId(ship.id);
-                              setEditingShipName(ship.name);
+          {isStorageCollapsed && savedShips.length === 0 && (
+            <div className="mt-2.5 pt-2 border-t border-white/5 text-[10px] text-white/40 font-mono animate-in fade-in duration-200">
+              No saved blueprints
+            </div>
+          )}
+
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col gap-3 ${isStorageCollapsed ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[500px] opacity-100 mt-4'}`}>
+            {/* Saved Ships List */}
+            <div className="max-h-52 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+              {savedShips.length === 0 ? (
+                <div className="text-center py-6 text-white/40 text-xs border border-dashed border-white/10 rounded-xl bg-white/2">
+                  No saved blueprints.
+                </div>
+              ) : (
+                savedShips.map(ship => (
+                  <div key={ship.id} className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/8 transition-all duration-300">
+                    <div className="flex justify-between items-center gap-2">
+                      {editingShipId === ship.id ? (
+                        <div className="flex items-center gap-1.5 w-full">
+                          <input
+                            type="text"
+                            value={editingShipName}
+                            onChange={(e) => setEditingShipName(e.target.value)}
+                            className="flex-1 min-w-0 bg-black/40 border border-white/20 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-blue-400"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveRename(ship.id);
+                              if (e.key === 'Escape') setEditingShipId(null);
                             }}
-                            className="p-1 hover:bg-white/10 text-white/50 hover:text-white rounded transition-colors cursor-pointer"
-                            title="Rename"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleSaveRename(ship.id)}
+                            className="p-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-400 rounded-md cursor-pointer"
+                            title="Save"
                           >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                           </button>
                           <button
-                            onClick={() => {
-                              deleteSavedShip(ship.id);
-                              showToast(`Deleted blueprint "${ship.name}"`);
-                            }}
-                            className="p-1 hover:bg-red-500/20 text-red-400/50 hover:text-red-400 rounded transition-colors cursor-pointer"
-                            title="Delete"
+                            onClick={() => setEditingShipId(null)}
+                            className="p-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-md cursor-pointer"
+                            title="Cancel"
                           >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
                         </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Ship Details & Actions */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-white/50 border-t border-white/5 pt-1.5">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-semibold text-blue-400">
-                        {ship.totalBlocks} {ship.totalBlocks === 1 ? 'block' : 'blocks'}
-                      </span>
-                      <span className="text-white/40">
-                        SP: {ship.stats?.systemRequirements || 0} / {ship.stats?.systemSupport || 0} • F/W: {(ship.stats?.force || 0).toFixed(1)}t / {(ship.stats?.weight || 0).toFixed(1)}t
-                      </span>
+                      ) : (
+                        <>
+                          <span className="text-xs font-bold text-white truncate max-w-[150px]">{ship.name}</span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                setEditingShipId(ship.id);
+                                setEditingShipName(ship.name);
+                              }}
+                              className="p-1 hover:bg-white/10 text-white/50 hover:text-white rounded transition-colors cursor-pointer"
+                              title="Rename"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => {
+                                deleteSavedShip(ship.id);
+                                showToast(`Deleted blueprint "${ship.name}"`);
+                              }}
+                              className="p-1 hover:bg-red-500/20 text-red-400/50 hover:text-red-400 rounded transition-colors cursor-pointer"
+                              title="Delete"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                              </svg>
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
 
-                    {!editingShipId && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            const url = window.location.origin + window.location.pathname + '?ship=' + serializeBlocks(ship.blocks);
-                            navigator.clipboard.writeText(url);
-                            window.history.replaceState(null, '', url);
-                            showToast(`Share link for "${ship.name}" copied!`);
-                          }}
-                          className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-white/80 hover:text-white transition-all font-semibold flex items-center gap-1 cursor-pointer"
-                          title="Copy Share Link"
-                        >
-                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935-2.186 2.25 2.25 0 00-3.935 2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                          </svg>
-                          Share
-                        </button>
-                        <button
-                          onClick={() => {
-                            setBlocks(ship.blocks);
-                            showToast(`Loaded "${ship.name}" blueprint.`);
-                          }}
-                          className="px-2.5 py-1 bg-blue-500/20 hover:bg-blue-500/35 border border-blue-400/30 rounded text-blue-300 font-bold cursor-pointer"
-                        >
-                          Load
-                        </button>
+                    {/* Ship Details & Actions */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-white/50 border-t border-white/5 pt-1.5">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold text-blue-400">
+                          {ship.totalBlocks} {ship.totalBlocks === 1 ? 'block' : 'blocks'}
+                        </span>
+                        <span className="text-white/40">
+                          SP: {ship.stats?.systemRequirements || 0} / {ship.stats?.systemSupport || 0} • F/W: {(ship.stats?.force || 0).toFixed(1)}t / {(ship.stats?.weight || 0).toFixed(1)}t
+                        </span>
                       </div>
-                    )}
+
+                      {!editingShipId && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              const url = window.location.origin + window.location.pathname + '?ship=' + serializeBlocks(ship.blocks);
+                              navigator.clipboard.writeText(url);
+                              window.history.replaceState(null, '', url);
+                              showToast(`Share link for "${ship.name}" copied!`);
+                            }}
+                            className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-white/80 hover:text-white transition-all font-semibold flex items-center gap-1 cursor-pointer"
+                            title="Copy Share Link"
+                          >
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935-2.186 2.25 2.25 0 00-3.935 2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                            </svg>
+                            Share
+                          </button>
+                          <button
+                            onClick={() => {
+                              setBlocks(ship.blocks);
+                              showToast(`Loaded "${ship.name}" blueprint.`);
+                            }}
+                            className="px-2.5 py-1 bg-blue-500/20 hover:bg-blue-500/35 border border-blue-400/30 rounded text-blue-300 font-bold cursor-pointer"
+                          >
+                            Load
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                ))
+              )}
+            </div>
+
+            {/* Save Ship Form */}
+            {isSaving ? (
+              <div className="flex flex-col gap-2 p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 animate-in slide-in-from-bottom-2 duration-300">
+                <span className="text-[9px] uppercase font-bold tracking-widest text-blue-400">Save Design Blueprint</span>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Blueprint name..."
+                    value={shipNameInput}
+                    onChange={(e) => setShipNameInput(e.target.value)}
+                    className="flex-1 bg-black/40 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-400"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveCurrentShip();
+                      if (e.key === 'Escape') setIsSaving(false);
+                    }}
+                    autoFocus
+                  />
                 </div>
-              ))
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => setIsSaving(false)}
+                    className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded-lg text-xs font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveCurrentShip}
+                    disabled={!shipNameInput.trim()}
+                    className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsSaving(true)}
+                disabled={blocks.length === 0}
+                className="w-full py-2.5 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white transition-all hover:scale-101 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Save Current Ship
+              </button>
             )}
           </div>
-
-          {/* Save Ship Form */}
-          {isSaving ? (
-            <div className="flex flex-col gap-2 p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 animate-in slide-in-from-bottom-2 duration-300">
-              <span className="text-[9px] uppercase font-bold tracking-widest text-blue-400">Save Design Blueprint</span>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Blueprint name..."
-                  value={shipNameInput}
-                  onChange={(e) => setShipNameInput(e.target.value)}
-                  className="flex-1 bg-black/40 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-400"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSaveCurrentShip();
-                    if (e.key === 'Escape') setIsSaving(false);
-                  }}
-                  autoFocus
-                />
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => setIsSaving(false)}
-                  className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded-lg text-xs font-semibold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveCurrentShip}
-                  disabled={!shipNameInput.trim()}
-                  className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsSaving(true)}
-              disabled={blocks.length === 0}
-              className="w-full py-2.5 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white transition-all hover:scale-101 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Save Current Ship
-            </button>
-          )}
         </div>
       </div>
 
