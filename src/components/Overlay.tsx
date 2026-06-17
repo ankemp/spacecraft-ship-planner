@@ -139,7 +139,7 @@ export function Overlay() {
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
   const nudgeBlock = useShipStore(s => s.nudgeBlock);
-  // const rotateBlock = useShipStore(s => s.rotateBlock);
+  const rotateBlock = useShipStore(s => s.rotateBlock);
   const removeBlock = useShipStore(s => s.removeBlock);
   const startMoveBlock = useShipStore(s => s.startMoveBlock);
   const updateBlockColor = useShipStore(s => s.updateBlockColor);
@@ -611,13 +611,6 @@ export function Overlay() {
                   >
                     X+
                   </button>
-                  {/* <button
-                    onClick={() => rotateBlock(selectedBlock.id, 'x')}
-                    className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Rotate X (X Key)"
-                  >
-                    Rot X
-                  </button> */}
 
                   <button
                     onClick={() => nudgeBlock(selectedBlock.id, [0, -1, 0])}
@@ -633,13 +626,6 @@ export function Overlay() {
                   >
                     Y+
                   </button>
-                  {/* <button
-                    onClick={() => rotateBlock(selectedBlock.id, 'y')}
-                    className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Rotate Y (R Key)"
-                  >
-                    Rot Y
-                  </button> */}
 
                   <button
                     onClick={() => nudgeBlock(selectedBlock.id, [0, 0, -1])}
@@ -655,15 +641,23 @@ export function Overlay() {
                   >
                     Z+
                   </button>
-                  {/* <button
-                    onClick={() => rotateBlock(selectedBlock.id, 'z')}
-                    className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer"
-                    title="Rotate Z (Z Key)"
-                  >
-                    Rot Z
-                  </button> */}
                 </div>
               </div>
+
+              {BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Thrusters' && (
+                <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Orientation</span>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    <button
+                      onClick={() => rotateBlock(selectedBlock.id, 'x')}
+                      className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center"
+                      title="Flip X (X Key)"
+                    >
+                      Flip X
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Block Color</span>
@@ -916,10 +910,10 @@ export function Overlay() {
                 <span className="text-white/60">Delete Block</span>
                 <kbd className="bg-white/10 px-2 py-0.5 rounded text-white font-mono text-[10px] border border-white/20 shadow-inner">RMB / Del</kbd>
               </div>
-              {/* <div className="flex justify-between items-center">
-                <span className="text-white/60">Rotate (Y / X / Z)</span>
-                <kbd className="bg-white/10 px-2 py-0.5 rounded text-white font-mono text-[10px] border border-white/20 shadow-inner">R / X / Z</kbd>
-              </div> */}
+              <div className="flex justify-between items-center">
+                <span className="text-white/60">Flip Engine</span>
+                <kbd className="bg-white/10 px-2 py-0.5 rounded text-white font-mono text-[10px] border border-white/20 shadow-inner">X</kbd>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-white/60">Select Mode</span>
                 <kbd className="bg-white/10 px-2 py-0.5 rounded text-white font-mono text-[10px] border border-white/20 shadow-inner">S</kbd>

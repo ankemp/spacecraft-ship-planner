@@ -357,32 +357,46 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     const block = blocks.find(b => b.id === id);
     if (!block) return false;
     
-    // 1. Compute current center of bounding box
+    const def = BLOCK_DEFINITIONS[block.type];
+    if (!def) return false;
+    const [w, h, d] = def.dimensions;
+
+    // 1. Compute bounds
     const oldBounds = getBlockBounds(block.type, block.position, block.rotation);
-    const oldCenterX = (oldBounds.minX + oldBounds.maxX) / 2;
-    const oldCenterY = (oldBounds.minY + oldBounds.maxY) / 2;
-    const oldCenterZ = (oldBounds.minZ + oldBounds.maxZ) / 2;
 
     // 2. Compute new rotation
     const newRot: [number, number, number] = [...block.rotation];
     const idx = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
     newRot[idx] = (newRot[idx] + Math.PI / 2) % (Math.PI * 2);
 
-    // 3. Compute new local center
+    // 3. Compute new local bounds
     const newLocalBounds = getBlockBounds(block.type, [0, 0, 0], newRot);
-    const newLocalCenterX = (newLocalBounds.minX + newLocalBounds.maxX) / 2;
-    const newLocalCenterY = (newLocalBounds.minY + newLocalBounds.maxY) / 2;
-    const newLocalCenterZ = (newLocalBounds.minZ + newLocalBounds.maxZ) / 2;
 
-    // 4. Compute new position to rotate around center
-    const newPos: [number, number, number] = [
-      Math.round(oldCenterX - newLocalCenterX),
-      Math.round(oldCenterY - newLocalCenterY),
-      Math.round(oldCenterZ - newLocalCenterZ),
-    ];
+    // 4. Compute new position (XZ rotates around a local integer-based pivot, Y preserves bottom level unless below 0)
+    const pxLocal = Math.floor(w / 2);
+    const pyLocal = Math.floor(h / 2);
+    const pzLocal = Math.floor(d / 2);
+    const pivotLocal = new THREE.Vector3(pxLocal, pyLocal, pzLocal);
 
-    // Clamp Y to prevent going below floor
-    newPos[1] = Math.max(0, newPos[1]);
+    // Rotate pivot by old rotation
+    const eulerOld = new THREE.Euler(block.rotation[0], block.rotation[1], block.rotation[2], 'XYZ');
+    const pivotOld = pivotLocal.clone().applyEuler(eulerOld);
+    const pxOld = Math.round(pivotOld.x);
+    const pzOld = Math.round(pivotOld.z);
+
+    // Rotate pivot by new rotation
+    const eulerNew = new THREE.Euler(newRot[0], newRot[1], newRot[2], 'XYZ');
+    const pivotNew = pivotLocal.clone().applyEuler(eulerNew);
+    const pxNew = Math.round(pivotNew.x);
+    const pzNew = Math.round(pivotNew.z);
+
+    const newPosX = block.position[0] + pxOld - pxNew;
+    const newPosZ = block.position[2] + pzOld - pzNew;
+    
+    let newPosY = oldBounds.minY - newLocalBounds.minY;
+    newPosY = Math.max(-newLocalBounds.minY, newPosY);
+
+    const newPos: [number, number, number] = [newPosX, newPosY, newPosZ];
 
     const otherBlocks = blocks.filter(b => b.id !== id);
     

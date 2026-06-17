@@ -14,11 +14,13 @@ interface KeyboardHandlerProps {
 function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
   const { camera } = useThree();
 
+  const blocks = useShipStore(s => s.blocks);
+  const activeTool = useShipStore(s => s.activeTool);
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
   const movingBlock = useShipStore(s => s.movingBlock);
   const cancelMoveBlock = useShipStore(s => s.cancelMoveBlock);
-  // const rotateBlock = useShipStore(s => s.rotateBlock);
+  const rotateBlock = useShipStore(s => s.rotateBlock);
   const setActiveTool = useShipStore(s => s.setActiveTool);
   const startMoveBlock = useShipStore(s => s.startMoveBlock);
   const removeBlock = useShipStore(s => s.removeBlock);
@@ -39,27 +41,28 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       const key = e.key.toLowerCase();
 
-      /*
-      if (key === 'r') {
-        if (selectedBlockId && !movingBlock) {
-          rotateBlock(selectedBlockId, 'y');
-        } else {
-          setRotation(prev => [prev[0], (prev[1] + Math.PI / 2) % (Math.PI * 2), prev[2]]);
-        }
-      } else if (key === 'x') {
-        if (selectedBlockId && !movingBlock) {
-          rotateBlock(selectedBlockId, 'x');
-        } else {
+      // Check if rotation/flipping is allowed (only for Thrusters)
+      const isPlacingOrMoving = !!movingBlock || activeTool !== 'select';
+      const targetType = movingBlock
+        ? movingBlock.type
+        : (activeTool !== 'select' ? activeTool : null);
+
+      const isEngine = targetType
+        ? BLOCK_DEFINITIONS[targetType]?.group === 'Thrusters'
+        : false;
+
+      const selectedBlock = selectedBlockId ? blocks.find(b => b.id === selectedBlockId) : null;
+      const isSelectedEngine = selectedBlock
+        ? BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Thrusters'
+        : false;
+
+      if (key === 'x') {
+        if (isPlacingOrMoving && isEngine) {
           setRotation(prev => [(prev[0] + Math.PI / 2) % (Math.PI * 2), prev[1], prev[2]]);
-        }
-      } else if (key === 'z') {
-        if (selectedBlockId && !movingBlock) {
-          rotateBlock(selectedBlockId, 'z');
-        } else {
-          setRotation(prev => [prev[0], prev[1], (prev[2] + Math.PI / 2) % (Math.PI * 2)]);
+        } else if (selectedBlockId && !movingBlock && isSelectedEngine) {
+          rotateBlock(selectedBlockId, 'x');
         }
       }
-      */
 
       // S key switches to Select Mode
       if (key === 's') {
@@ -136,6 +139,8 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
+    blocks,
+    activeTool,
     selectedBlockId,
     movingBlock,
     camera,
@@ -145,7 +150,7 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
     setSelectedBlockId,
     removeBlock,
     nudgeBlock,
-    // rotateBlock,
+    rotateBlock,
     setRotation
   ]);
 
@@ -176,6 +181,13 @@ export function Scene() {
     setRotation(movingBlock.rotation);
   } else if (!movingBlock && prevMovingBlockId !== null) {
     setPrevMovingBlockId(null);
+  }
+
+  // Reset rotation to [0, 0, 0] when active tool changes to prevent stale rotation state from leaking
+  const [prevActiveTool, setPrevActiveTool] = useState(activeTool);
+  if (activeTool !== prevActiveTool) {
+    setPrevActiveTool(activeTool);
+    setRotation([0, 0, 0]);
   }
 
 
@@ -223,7 +235,7 @@ export function Scene() {
   const ghostType = movingBlock ? movingBlock.type : activeTool;
   const def = BLOCK_DEFINITIONS[ghostType];
 
-  // Dynamically derive the centered anchor position of the block under rotation
+  // Dynamically derive the centered anchor position of the block under rotation (aligning bottom with cursorPos Y)
   let hoverPos: [number, number, number] | null = null;
   if (cursorPos) {
     if (def) {
@@ -231,9 +243,9 @@ export function Scene() {
       const sizeX = currentRotBounds.maxX - currentRotBounds.minX;
       const sizeZ = currentRotBounds.maxZ - currentRotBounds.minZ;
       hoverPos = [
-        cursorPos[0] - Math.floor(sizeX / 2),
-        cursorPos[1],
-        cursorPos[2] - Math.floor(sizeZ / 2),
+        cursorPos[0] - Math.floor(sizeX / 2) - currentRotBounds.minX,
+        cursorPos[1] - currentRotBounds.minY,
+        cursorPos[2] - Math.floor(sizeZ / 2) - currentRotBounds.minZ,
       ];
     } else {
       hoverPos = cursorPos;
