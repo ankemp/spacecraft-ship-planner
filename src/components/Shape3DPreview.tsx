@@ -1,7 +1,8 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Edges } from '@react-three/drei';
-import { BlockGeometry, getBufferGeometry } from './BlockGeometry';
+import { BlockGeometry } from './BlockGeometry';
+import { getBufferGeometry } from '../utils/geometry';
 import { useShipStore } from '../store/shipStore';
 import * as THREE from 'three';
 
@@ -144,13 +145,15 @@ function AnimatedSprite({
 
   useEffect(() => {
     if (disableRotation || frames.length <= 1) {
-      setFrameIndex(0);
       return;
     }
     const interval = setInterval(() => {
       setFrameIndex(prev => (prev + 1) % frames.length);
     }, 80); // Snappy 80ms per frame
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      setFrameIndex(0);
+    };
   }, [frames, disableRotation]);
 
   if (frames.length === 0) return null;
@@ -211,7 +214,7 @@ function getOffscreenRenderer() {
 
 const previewImageCache = new Map<string, string[]>();
 
-export function getPreviewFrames(
+function getPreviewFrames(
   shapeId: string,
   color: string,
   dimensions?: [number, number, number],
@@ -309,12 +312,9 @@ export function Shape3DPreview({
     localMouseRef.current = { x: 0, y: 0 };
   };
 
-  const [frames, setFrames] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (potatoMode) return;
-    const generated = getPreviewFrames(shapeId, color, dimensions, disableRotation);
-    setFrames(generated);
+  const frames = useMemo(() => {
+    if (potatoMode) return [];
+    return getPreviewFrames(shapeId, color, dimensions, disableRotation);
   }, [shapeId, color, dimensions, disableRotation, potatoMode]);
 
   if (potatoMode) {
