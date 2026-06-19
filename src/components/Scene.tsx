@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, Grid, Sky, Environment, Edges } from '@react-three/drei';
+import { OrbitControls, Grid, Sky, Environment, Edges, Stars } from '@react-three/drei';
 import { useShipStore, getBlockBounds } from '../store/shipStore';
 import { Block } from './Block';
 import { BlockGeometry } from './BlockGeometry';
 import { BLOCK_DEFINITIONS } from '../config/blocks';
 import * as THREE from 'three';
+import { Nebula, Planet, HangarBay } from './Backgrounds';
 
 /**
  * Invalidator: lives inside <Canvas> so it has access to R3F's invalidate().
@@ -22,8 +23,9 @@ function Invalidator() {
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const activeTool = useShipStore(s => s.activeTool);
   const potatoMode = useShipStore(s => s.potatoMode);
+  const background = useShipStore(s => s.background);
 
-  useEffect(() => { invalidate(); }, [blocks, movingBlock, selectedBlockId, activeTool, potatoMode, invalidate]);
+  useEffect(() => { invalidate(); }, [blocks, movingBlock, selectedBlockId, activeTool, potatoMode, background, invalidate]);
 
   return null;
 }
@@ -265,6 +267,7 @@ function PerformanceMonitor() {
 export function Scene() {
   const blocks = useShipStore(s => s.blocks);
   const potatoMode = useShipStore(s => s.potatoMode);
+  const background = useShipStore(s => s.background);
   const activeTool = useShipStore(s => s.activeTool);
   const activeShape = useShipStore(s => s.activeShape);
   const setActiveTool = useShipStore(s => s.setActiveTool);
@@ -484,10 +487,54 @@ export function Scene() {
       <KeyboardHandler setRotation={setRotation} />
       <PerformanceMonitor />
       <Invalidator />
-      <Sky sunPosition={[100, 20, 100]} />
+      
+      {/* Background / Environment Setup */}
+      {potatoMode ? (
+        <color 
+          attach="background" 
+          args={[
+            background === 'atmosphere' ? '#0f172a' :
+            background === 'nebula' ? '#090514' :
+            background === 'orbit' ? '#02040a' :
+            '#111215'
+          ]} 
+        />
+      ) : (
+        <>
+          {background === 'atmosphere' && (
+            <>
+              <Sky sunPosition={[100, 20, 100]} />
+              <Environment preset="city" />
+            </>
+          )}
+          {background === 'nebula' && (
+            <>
+              <color attach="background" args={['#030206']} />
+              <Stars radius={150} depth={50} count={3000} factor={4} saturation={0.5} speed={0} />
+              <Nebula />
+              <Environment preset="sunset" />
+            </>
+          )}
+          {background === 'orbit' && (
+            <>
+              <color attach="background" args={['#010103']} />
+              <Stars radius={150} depth={50} count={2000} factor={3} saturation={0.3} speed={0} />
+              <Planet />
+              <Environment preset="city" />
+            </>
+          )}
+          {background === 'hangar' && (
+            <>
+              <color attach="background" args={['#090a0f']} />
+              <HangarBay />
+              <Environment preset="warehouse" />
+            </>
+          )}
+        </>
+      )}
+
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 20, 10]} intensity={1} castShadow />
-      {!potatoMode && <Environment preset="city" />}
 
       <group
         onPointerDown={onPointerDown}
@@ -532,8 +579,27 @@ export function Scene() {
         </group>
       )}
 
-      {/* Grid */}
-      <Grid infiniteGrid fadeDistance={50} sectionColor="#444" cellColor="#888" />
+      {/* Dynamic Grid */}
+      <Grid 
+        infiniteGrid 
+        fadeDistance={50} 
+        sectionColor={
+          background === 'nebula' ? '#4d127a' :
+          background === 'orbit' ? '#005f73' :
+          background === 'hangar' ? '#9e2a2b' :
+          '#444444'
+        }
+        cellColor={
+          background === 'nebula' ? '#226b80' :
+          background === 'orbit' ? '#0a9396' :
+          background === 'hangar' ? '#e9d8a6' :
+          '#888888'
+        }
+        sectionSize={5}
+        cellSize={1}
+        cellThickness={1.0}
+        sectionThickness={1.5}
+      />
       <OrbitControls makeDefault />
     </Canvas>
   );

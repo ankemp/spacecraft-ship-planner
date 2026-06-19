@@ -94,6 +94,8 @@ interface ShipStore {
   dismissedPotatoSuggestion: boolean;
   setSuggestPotatoMode: (suggest: boolean) => void;
   dismissPotatoSuggestion: () => void;
+  background: 'atmosphere' | 'nebula' | 'orbit' | 'hangar';
+  setBackground: (bg: 'atmosphere' | 'nebula' | 'orbit' | 'hangar') => void;
 }
 
 export function getBlockBounds(type: string, position: [number, number, number], rotation: [number, number, number]): BlockBounds {
@@ -307,6 +309,13 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     set({ suggestPotatoMode: false, dismissedPotatoSuggestion: true });
     if (typeof window !== 'undefined') {
       localStorage.setItem('spacecraft_shipbuilder_potato_suggest_dismissed', 'true');
+    }
+  },
+  background: typeof window !== 'undefined' ? ((localStorage.getItem('spacecraft_shipbuilder_background') as 'atmosphere' | 'nebula' | 'orbit' | 'hangar' | null) || 'nebula') : 'nebula',
+  setBackground: (bg) => {
+    set({ background: bg });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('spacecraft_shipbuilder_background', bg);
     }
   },
 

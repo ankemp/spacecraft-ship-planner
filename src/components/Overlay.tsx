@@ -25,6 +25,8 @@ export function Overlay() {
   const setPotatoMode = useShipStore(s => s.setPotatoMode);
   const suggestPotatoMode = useShipStore(s => s.suggestPotatoMode);
   const dismissPotatoSuggestion = useShipStore(s => s.dismissPotatoSuggestion);
+  const background = useShipStore(s => s.background);
+  const setBackground = useShipStore(s => s.setBackground);
 
   // Memoize expensive derived computations so they only re-run when blocks
   // actually change, not on every Overlay re-render (activeTool, panel states,
@@ -231,6 +233,7 @@ export function Overlay() {
   // Redesigned UI states
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
   const [showHotkeys, setShowHotkeys] = useState(false);
+  const [showBackgroundMenu, setShowBackgroundMenu] = useState(false);
 
   // Collapsible panels states
   const [isBomCollapsed, setIsBomCollapsed] = useState<boolean>(() => {
@@ -1827,6 +1830,91 @@ export function Overlay() {
           </div>
         )}
 
+        {/* Background Selection Popover */}
+        {showBackgroundMenu && (
+          <div className="bg-black/90 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl w-80 text-xs text-white flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-3 duration-300 select-none">
+            <div className="flex justify-between items-center border-b border-white/10 pb-2">
+              <span className="font-bold text-blue-400 uppercase tracking-wider text-[10px]">Select Space Background</span>
+              <button
+                onClick={() => setShowBackgroundMenu(false)}
+                className="p-1 hover:bg-white/10 rounded text-white/50 hover:text-white cursor-pointer"
+                title="Close"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {potatoMode && (
+              <div className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] leading-relaxed">
+                <span>🥔 <strong>Potato Mode Active:</strong> Background details are simplified to flat colors to conserve GPU resources.</span>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 gap-2">
+              {[
+                {
+                  id: 'nebula',
+                  name: 'Deep Space Nebula',
+                  desc: 'Starry purple-cyan cosmic cloud shader',
+                  color: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+                  dot: '#c084fc',
+                },
+                {
+                  id: 'orbit',
+                  name: 'Earth Orbit',
+                  desc: 'Orbital view of Earth with atmosphere & city lights',
+                  color: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+                  dot: '#60a5fa',
+                },
+                {
+                  id: 'hangar',
+                  name: 'Sci-Fi Hangar',
+                  desc: 'Industrial construction bay with neon strip lighting',
+                  color: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+                  dot: '#fbbf24',
+                },
+                {
+                  id: 'atmosphere',
+                  name: 'Sky Atmosphere',
+                  desc: 'Classic bright daytime sky',
+                  color: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
+                  dot: '#38bdf8',
+                },
+              ].map((bgItem) => {
+                const isSelected = background === bgItem.id;
+                return (
+                  <button
+                    key={bgItem.id}
+                    onClick={() => {
+                      setBackground(bgItem.id as 'atmosphere' | 'nebula' | 'orbit' | 'hangar');
+                    }}
+                    className={`flex items-center justify-between p-3 rounded-xl border text-left cursor-pointer transition-all duration-200 ${
+                      isSelected
+                        ? `${bgItem.color} ring-1 ring-white/10`
+                        : 'bg-white/5 border-transparent hover:bg-white/10 text-white/80 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex flex-col gap-0.5 min-w-0 pr-2">
+                      <span className="font-semibold text-xs flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: bgItem.dot }} />
+                        {bgItem.name}
+                      </span>
+                      <span className="text-[10px] text-white/50 truncate">{bgItem.desc}</span>
+                    </div>
+                    {isSelected && (
+                      <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Hotkeys Popover */}
         {showHotkeys && (
           <div className="bg-black/90 backdrop-blur-2xl border border-white/10 p-5 rounded-2xl w-80 text-xs text-white flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 select-none">
@@ -1944,7 +2032,10 @@ export function Overlay() {
 
           {/* Help / Hotkeys Toggle */}
           <button
-            onClick={() => setShowHotkeys(!showHotkeys)}
+            onClick={() => {
+              setShowHotkeys(!showHotkeys);
+              setShowBackgroundMenu(false);
+            }}
             className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${showHotkeys
               ? 'bg-blue-500/20 text-blue-400 border-blue-400/30'
               : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
@@ -1956,9 +2047,29 @@ export function Overlay() {
             </svg>
           </button>
 
+          {/* Background Scene Selector */}
+          <button
+            onClick={() => {
+              setShowBackgroundMenu(!showBackgroundMenu);
+              setShowHotkeys(false);
+            }}
+            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${showBackgroundMenu
+              ? 'bg-purple-500/20 text-purple-400 border-purple-400/30'
+              : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
+              }`}
+            title="Choose Environment Background"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+          </button>
+
           {/* Potato Mode Toggle */}
           <button
-            onClick={() => setPotatoMode(!potatoMode)}
+            onClick={() => {
+              setPotatoMode(!potatoMode);
+              // Hide popovers that aren't necessary
+            }}
             className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${potatoMode
               ? 'bg-amber-500/20 text-amber-400 border-amber-400/30'
               : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
