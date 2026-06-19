@@ -149,10 +149,34 @@ export function getBlockBounds(type: string, position: [number, number, number],
 
 
 // Helpers for localStorage sync
+// Debounced + idle-callback autosave:
+// JSON.stringify on large block arrays is synchronous and can steal 5-15ms
+// from the main thread on every mutation. By deferring 500ms and running
+// during browser idle time, serialisation is moved completely off the
+// critical input path. At most 500ms of work is lost if the tab is closed.
+let _autosaveTimerId: ReturnType<typeof setTimeout> | null = null;
+
 const saveAutosave = (blocks: BlockInstance[]) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('spacecraft_shipbuilder_autosave', JSON.stringify(blocks));
+  if (typeof window === 'undefined') return;
+
+  // Cancel any pending save
+  if (_autosaveTimerId !== null) {
+    clearTimeout(_autosaveTimerId);
   }
+
+  _autosaveTimerId = setTimeout(() => {
+    _autosaveTimerId = null;
+    const doSave = () => {
+      localStorage.setItem('spacecraft_shipbuilder_autosave', JSON.stringify(blocks));
+    };
+
+    // Run during browser idle time if the API is available
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(doSave, { timeout: 2000 });
+    } else {
+      doSave();
+    }
+  }, 500);
 };
 
 const getInitialBlocks = (): BlockInstance[] => {
@@ -639,6 +663,6 @@ export const selectStats = (state: ShipStore | { blocks: BlockInstance[] }) => {
   return totals;
 };
 
-export const selectDerivedStats = (state: ShipStore | { blocks: BlockInstance[] }) => {
-  return computeDerivedStats(state.blocks);
+export const selectDerivedStats = (state: ShipStore | { blocks: BlockInstance[] }, skipConnectivity = false) => {
+  return computeDerivedStats(state.blocks, skipConnectivity);
 };

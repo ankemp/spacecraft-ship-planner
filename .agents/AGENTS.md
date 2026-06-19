@@ -11,3 +11,17 @@ Key areas of alignment:
 - **Structural Integrity**: Calculate and display the Frame to Weight ratio as a measure of integrity.
 - **Thruster Mechanics**: Combine boost stats additively rather than overriding them, and ensure Force and Thrust are handled correctly.
 - **Block Shapes**: Treat shapes as cosmetic variations without affecting collision dimensions or block stats.
+
+---
+
+## Performance & Potato Mode Compliance
+
+Whenever adding new features, UI controls, or 3D animations, you MUST strictly adhere to the guidelines, checklists, and performance architecture detailed in [POTATO_MODE.md](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/POTATO_MODE.md).
+
+Key compliance rules:
+- **Gate cosmetic/non-essential features** (e.g. menu shapes, environment presets, complex analysis) behind the `potatoMode` flag.
+- **Avoid per-frame React state updates** inside `useFrame` (use `useRef` for frame-level tracking).
+- **Keep `saveAutosave` off the hot path** (ensure it remains debounced and deferred).
+- **Memoize expensive derived state** (e.g., BFS-based selectors) keyed on the blocks reference.
+- **Render on demand** by subscribing state changes that affect 3D visuals to the R3F `<Canvas>` `Invalidator`.
+

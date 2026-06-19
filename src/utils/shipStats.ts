@@ -67,7 +67,7 @@ function areAdjacent(b1: BlockBounds, b2: BlockBounds): boolean {
   return false;
 }
 
-export function computeDerivedStats(blocks: BlockInstance[]): DerivedShipStats {
+export function computeDerivedStats(blocks: BlockInstance[], skipConnectivity = false): DerivedShipStats {
   const raw: Record<string, number> = {};
 
   // Compute raw sums
@@ -135,10 +135,12 @@ export function computeDerivedStats(blocks: BlockInstance[]): DerivedShipStats {
   const boostTotalHeat = heatGenerated + boostHeatGeneration;
 
   // Connectivity analysis (BFS starting from cockpit/core blocks)
+  // Skip in Potato Mode — it's O(N²) worst case and only drives cosmetic
+  // disconnected-block highlighting, which isn't worth the cost on low-spec.
   const connectedBlockIds: string[] = [];
   const disconnectedBlockIds: string[] = [];
 
-  if (blocks.length > 0) {
+  if (!skipConnectivity && blocks.length > 0) {
     const blockBounds = blocks.map(b => b.bounds || getBlockBounds(b.type, b.position, b.rotation));
     const isCockpit = blocks.map(b => BLOCK_DEFINITIONS[b.type]?.group === 'Cockpits');
 

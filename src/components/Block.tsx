@@ -16,20 +16,25 @@ interface BlockProps {
   flipX?: boolean;
   flipY?: boolean;
   flipZ?: boolean;
+  // Derived in Scene.tsx from (activeTool === 'select' && !movingBlock).
+  // Passed as a prop so Block doesn't need its own store subscriptions for
+  // activeTool / movingBlock, avoiding N re-renders per tool change.
+  canInteract?: boolean;
+  // bounds is part of BlockInstance but not needed for rendering
+  bounds?: unknown;
 }
 
-export const Block = memo(function Block({ id, type, position, rotation, color, shape, flipX, flipY, flipZ }: BlockProps) {
+export const Block = memo(function Block({ id, type, position, rotation, color, shape, flipX, flipY, flipZ, canInteract = false }: BlockProps) {
   const def = BLOCK_DEFINITIONS[type];
   const removeBlock = useShipStore(s => s.removeBlock);
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
-  const activeTool = useShipStore(s => s.activeTool);
-  const movingBlock = useShipStore(s => s.movingBlock);
 
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
   const [isHovered, setIsHovered] = useState(false);
 
-  const canHover = activeTool === 'select' && !movingBlock;
+  // canHover is now driven by the prop passed from Scene, not from the store
+  const canHover = canInteract;
 
   useEffect(() => {
     if (!canHover) {
@@ -103,7 +108,7 @@ export const Block = memo(function Block({ id, type, position, rotation, color, 
             }
             if (id) removeBlock(id);
           } else if (e.button === 0) {
-            if (activeTool === 'select' && id && !movingBlock) {
+            if (canInteract && id) {
               e.stopPropagation();
               if (pointerDownRef.current) {
                 const dx = e.nativeEvent.clientX - pointerDownRef.current.x;

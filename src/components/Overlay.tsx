@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useShipStore, selectBOM, selectDerivedStats } from '../store/shipStore';
 import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER, HULL_SHAPES } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
@@ -26,10 +26,18 @@ export function Overlay() {
   const suggestPotatoMode = useShipStore(s => s.suggestPotatoMode);
   const dismissPotatoSuggestion = useShipStore(s => s.dismissPotatoSuggestion);
 
-  const bom = selectBOM({ blocks });
+  // Memoize expensive derived computations so they only re-run when blocks
+  // actually change, not on every Overlay re-render (activeTool, panel states,
+  // selectedBlockId, etc. would otherwise trigger BFS on every interaction).
+  const bom = useMemo(() => selectBOM({ blocks }), [blocks]);
   const { smallSteelParts, smallTitaniumParts, titaniumParts, supportHardware } = bom;
 
-  const derivedStats = selectDerivedStats({ blocks });
+  // In Potato Mode, skip the BFS connectivity analysis (O(N²)) since
+  // disconnected-block highlighting is cosmetic.
+  const derivedStats = useMemo(
+    () => selectDerivedStats({ blocks }, potatoMode),
+    [blocks, potatoMode]
+  );
   const shipStats = derivedStats.raw;
   const totalWeight = derivedStats.totalWeight;
   const totalForce = derivedStats.totalForce;

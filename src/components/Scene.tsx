@@ -8,6 +8,26 @@ import { BlockGeometry } from './BlockGeometry';
 import { BLOCK_DEFINITIONS } from '../config/blocks';
 import * as THREE from 'three';
 
+/**
+ * Invalidator: lives inside <Canvas> so it has access to R3F's invalidate().
+ * Subscribes to the slices of state that visually change the scene, and tells
+ * R3F to render a new frame whenever they change.
+ * Required because we use frameloop="demand" for performance.
+ */
+function Invalidator() {
+  const { invalidate } = useThree();
+  // Subscribe to the minimal set of state that actually changes what's drawn.
+  const blocks = useShipStore(s => s.blocks);
+  const movingBlock = useShipStore(s => s.movingBlock);
+  const selectedBlockId = useShipStore(s => s.selectedBlockId);
+  const activeTool = useShipStore(s => s.activeTool);
+  const potatoMode = useShipStore(s => s.potatoMode);
+
+  useEffect(() => { invalidate(); }, [blocks, movingBlock, selectedBlockId, activeTool, potatoMode, invalidate]);
+
+  return null;
+}
+
 interface KeyboardHandlerProps {
   setRotation: React.Dispatch<React.SetStateAction<[number, number, number]>>;
 }
@@ -456,10 +476,13 @@ export function Scene() {
 
   const isInvalid = hoverPos && def ? checkCollision(ghostType, hoverPos, rotation) : false;
 
+  const canInteract = activeTool === 'select' && !movingBlock;
+
   return (
-    <Canvas camera={{ position: [15, 15, 15], fov: 50 }}>
+    <Canvas camera={{ position: [15, 15, 15], fov: 50 }} frameloop="demand">
       <KeyboardHandler setRotation={setRotation} />
       <PerformanceMonitor />
+      <Invalidator />
       <Sky sunPosition={[100, 20, 100]} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 20, 10]} intensity={1} castShadow />
@@ -480,7 +503,7 @@ export function Scene() {
 
         {/* Placed Blocks */}
         {blocks.map(b => (
-          <Block key={b.id} {...b} />
+          <Block key={b.id} {...b} canInteract={canInteract} />
         ))}
       </group>
 
