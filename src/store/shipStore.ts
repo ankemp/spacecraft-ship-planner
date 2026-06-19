@@ -354,6 +354,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     }
 
     const isHull = blockDef && (blockDef.group === 'Steel' || blockDef.group === 'Titanium');
+    const hasFlips = blockDef && blockDef.allowedFlips && blockDef.allowedFlips.length > 0;
     const bounds = getBlockBounds(type, position, rotation);
 
     const newBlock: BlockInstance = {
@@ -362,9 +363,9 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       position,
       rotation,
       shape: isHull ? activeShape : undefined,
-      flipX: isHull ? activeFlipX : undefined,
-      flipY: isHull ? activeFlipY : undefined,
-      flipZ: isHull ? activeFlipZ : undefined,
+      flipX: hasFlips ? activeFlipX : undefined,
+      flipY: hasFlips ? activeFlipY : undefined,
+      flipZ: hasFlips ? activeFlipZ : undefined,
       bounds,
     };
 
@@ -424,13 +425,13 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       }
     }
     
-    const isHull = blockDef && (blockDef.group === 'Steel' || blockDef.group === 'Titanium');
+    const hasFlips = blockDef && blockDef.allowedFlips && blockDef.allowedFlips.length > 0;
     const bounds = getBlockBounds(movingBlock.type, position, rotation);
     const placedBlock: BlockInstance = {
       ...movingBlock,
       position,
       rotation,
-      ...(isHull ? {
+      ...(hasFlips ? {
         flipX: activeFlipX,
         flipY: activeFlipY,
         flipZ: activeFlipZ,
