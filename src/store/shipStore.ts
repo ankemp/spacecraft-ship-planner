@@ -88,6 +88,12 @@ interface ShipStore {
   renameSavedShip: (id: string, name: string) => void;
   updateBlockColor: (id: string, color: string | undefined) => void;
   updateBlockShape: (id: string, shape: string) => void;
+  potatoMode: boolean;
+  setPotatoMode: (enabled: boolean) => void;
+  suggestPotatoMode: boolean;
+  dismissedPotatoSuggestion: boolean;
+  setSuggestPotatoMode: (suggest: boolean) => void;
+  dismissPotatoSuggestion: () => void;
 }
 
 export function getBlockBounds(type: string, position: [number, number, number], rotation: [number, number, number]): BlockBounds {
@@ -194,6 +200,47 @@ const getInitialSavedShips = (): SavedShip[] => {
   return [];
 };
 
+const checkIsLowSpecHardware = (): boolean => {
+  if (typeof window === 'undefined') return false;
+
+  // 1. Check logical cores
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
+    return true;
+  }
+
+  // 2. Check memory (RAM)
+  // @ts-expect-error deviceMemory is non-standard
+  if (navigator.deviceMemory && navigator.deviceMemory < 4) {
+    return true;
+  }
+
+  // 3. Check WebGL GPU renderer
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
+    if (gl) {
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        const renderer = (gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '') as string;
+        const lowerRenderer = renderer.toLowerCase();
+        if (
+          lowerRenderer.includes('intel') ||
+          lowerRenderer.includes('hd graphics') ||
+          lowerRenderer.includes('uhd') ||
+          lowerRenderer.includes('llvmpipe') ||
+          lowerRenderer.includes('swiftshader')
+        ) {
+          return true;
+        }
+      }
+    }
+  } catch {
+    return true;
+  }
+
+  return false;
+};
+
 export const useShipStore = create<ShipStore>((set, get) => ({
   blocks: getInitialBlocks(),
   activeTool: 'steel_4x3x2',
@@ -218,6 +265,26 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   setSelectedBlockId: (id) => set({ selectedBlockId: id }),
   setMovingBlock: (block) => set({ movingBlock: block }),
   setToast: (toast) => set({ toast }),
+  potatoMode: typeof window !== 'undefined' ? localStorage.getItem('spacecraft_shipbuilder_potato_mode') === 'true' : false,
+  setPotatoMode: (enabled) => {
+    set({ potatoMode: enabled });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('spacecraft_shipbuilder_potato_mode', String(enabled));
+    }
+  },
+  suggestPotatoMode: typeof window !== 'undefined'
+    ? localStorage.getItem('spacecraft_shipbuilder_potato_suggest_dismissed') !== 'true' &&
+      localStorage.getItem('spacecraft_shipbuilder_potato_mode') !== 'true' &&
+      checkIsLowSpecHardware()
+    : false,
+  dismissedPotatoSuggestion: typeof window !== 'undefined' ? localStorage.getItem('spacecraft_shipbuilder_potato_suggest_dismissed') === 'true' : false,
+  setSuggestPotatoMode: (suggest) => set({ suggestPotatoMode: suggest }),
+  dismissPotatoSuggestion: () => {
+    set({ suggestPotatoMode: false, dismissedPotatoSuggestion: true });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('spacecraft_shipbuilder_potato_suggest_dismissed', 'true');
+    }
+  },
 
   checkCollision: (type, position, rotation) => {
     const { blocks } = get();

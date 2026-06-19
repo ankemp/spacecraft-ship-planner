@@ -21,6 +21,10 @@ export function Overlay() {
   const clearShip = useShipStore(s => s.clearShip);
   const setBlocks = useShipStore(s => s.setBlocks);
   const blocks = useShipStore(s => s.blocks);
+  const potatoMode = useShipStore(s => s.potatoMode);
+  const setPotatoMode = useShipStore(s => s.setPotatoMode);
+  const suggestPotatoMode = useShipStore(s => s.suggestPotatoMode);
+  const dismissPotatoSuggestion = useShipStore(s => s.dismissPotatoSuggestion);
 
   const bom = selectBOM({ blocks });
   const { smallSteelParts, smallTitaniumParts, titaniumParts, supportHardware } = bom;
@@ -879,7 +883,7 @@ export function Overlay() {
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                   System Support & Efficiency
                 </div>
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1.5">
                   {collapsedSections.sp && (
                     <span className="text-[9px] font-mono font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">
                       {derivedStats.spProvided}/{derivedStats.spConsumed} SP
@@ -888,15 +892,11 @@ export function Overlay() {
                   <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${derivedStats.efficiency >= 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : derivedStats.efficiency >= 0.75 ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                     {Math.round(derivedStats.efficiency * 100)}% Eff
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => toggleSection('sp')}
-                    className="text-white/40 hover:text-white transition-colors cursor-pointer"
-                  >
+                  <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
                     <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.sp ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
-                  </button>
+                  </span>
                 </div>
               </button>
 
@@ -931,7 +931,7 @@ export function Overlay() {
                   <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
                   Power System
                 </div>
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1.5">
                   {collapsedSections.power && (
                     <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${derivedStats.powerBalance >= 0 ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                       {derivedStats.powerBalance >= 0 ? '+' : ''}{derivedStats.powerBalance} kW
@@ -942,15 +942,11 @@ export function Overlay() {
                       NO BATTERY
                     </span>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => toggleSection('power')}
-                    className="text-white/40 hover:text-white transition-colors cursor-pointer"
-                  >
+                  <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
                     <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.power ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
-                  </button>
+                  </span>
                 </div>
               </button>
 
@@ -1021,21 +1017,17 @@ export function Overlay() {
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                   Heat & Thermal
                 </div>
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1.5">
                   {collapsedSections.heat && (
                     <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${derivedStats.heatBalance >= 0 ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                       {derivedStats.heatBalance >= 0 ? 'Safe' : 'HOT'}
                     </span>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => toggleSection('heat')}
-                    className="text-white/40 hover:text-white transition-colors cursor-pointer"
-                  >
+                  <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
                     <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.heat ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
-                  </button>
+                  </span>
                 </div>
               </button>
 
@@ -1091,21 +1083,17 @@ export function Overlay() {
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   Structure & Hull
                 </div>
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1.5">
                   {collapsedSections.structure && (
                     <span className="text-[9px] font-mono font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
                       F/W: {derivedStats.frameToWeightRatio.toFixed(2)}x
                     </span>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => toggleSection('structure')}
-                    className="text-white/40 hover:text-white transition-colors cursor-pointer"
-                  >
+                  <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
                     <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.structure ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
-                  </button>
+                  </span>
                 </div>
               </button>
 
@@ -1150,21 +1138,17 @@ export function Overlay() {
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
                   Propulsion & Boost
                 </div>
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1.5">
                   {collapsedSections.propulsion && (
                     <span className="text-[9px] font-mono font-bold bg-purple-500/10 border border-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">
                       {isBoostActive ? derivedStats.boostTotalThrust : derivedStats.totalThrust} kN
                     </span>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => toggleSection('propulsion')}
-                    className="text-white/40 hover:text-white transition-colors cursor-pointer"
-                  >
+                  <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
                     <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.propulsion ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                     </svg>
-                  </button>
+                  </span>
                 </div>
               </button>
 
@@ -1252,21 +1236,17 @@ export function Overlay() {
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                     Other / Raw Stats
                   </div>
-                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-1.5">
                     {collapsedSections.other && (
                       <span className="text-[9px] font-mono font-bold bg-gray-500/10 border border-gray-500/20 text-gray-400 px-1.5 py-0.5 rounded">
                         {otherStatKeys.length} stats
                       </span>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => toggleSection('other')}
-                      className="text-white/40 hover:text-white transition-colors cursor-pointer"
-                    >
+                    <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
                       <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.other ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                       </svg>
-                    </button>
+                    </span>
                   </div>
                 </button>
 
@@ -1790,6 +1770,38 @@ export function Overlay() {
       {/* Bottom Panel: Floating Toolbar & Hotkeys Popover */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-auto flex flex-col items-center gap-3">
 
+        {/* Potato Mode Suggestion Popover */}
+        {suggestPotatoMode && !potatoMode && (
+          <div className="bg-black/90 backdrop-blur-2xl border border-amber-500/40 p-4 rounded-2xl w-72 text-xs text-white flex flex-col gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-300 select-none">
+            <div className="flex gap-2.5 items-start">
+              <div className="text-xl flex-shrink-0">🥔</div>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="font-bold text-amber-400 uppercase tracking-wider text-[10px]">Optimize Performance?</span>
+                <span className="text-[10px] text-white/70 leading-relaxed">
+                  We noticed frame rate drops or low-spec hardware. Enable Potato Mode to disable resource-heavy 3D menu previews and reflections for a smoother experience.
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-1">
+              <button
+                onClick={dismissPotatoSuggestion}
+                className="px-2.5 py-1.5 hover:bg-white/10 rounded-lg text-[10px] text-white/50 hover:text-white cursor-pointer font-bold transition-all"
+              >
+                Dismiss
+              </button>
+              <button
+                onClick={() => {
+                  setPotatoMode(true);
+                  dismissPotatoSuggestion();
+                }}
+                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-black rounded-lg text-[10px] font-bold cursor-pointer transition-all shadow-[0_0_8px_rgba(245,158,11,0.2)]"
+              >
+                Enable Potato Mode
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Hotkeys Popover */}
         {showHotkeys && (
           <div className="bg-black/90 backdrop-blur-2xl border border-white/10 p-5 rounded-2xl w-80 text-xs text-white flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300 select-none">
@@ -1916,6 +1928,24 @@ export function Overlay() {
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+            </svg>
+          </button>
+
+          {/* Potato Mode Toggle */}
+          <button
+            onClick={() => setPotatoMode(!potatoMode)}
+            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${potatoMode
+              ? 'bg-amber-500/20 text-amber-400 border-amber-400/30'
+              : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
+              }`}
+            title={potatoMode ? "Disable Potato Mode (High Quality)" : "Enable Potato Mode (Low Spec)"}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M 6 12 C 4 7, 10 3, 16 4 C 20 5, 21 9, 20 13 C 19 17, 16 20, 11 20 C 6 20, 8 16, 6 12 Z" />
+              <circle cx="9" cy="9" r="0.8" fill="black" opacity="0.35" />
+              <circle cx="14" cy="8" r="0.6" fill="black" opacity="0.35" />
+              <circle cx="11" cy="14" r="0.7" fill="black" opacity="0.35" />
+              <circle cx="16" cy="13" r="0.5" fill="black" opacity="0.35" />
             </svg>
           </button>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Grid, Sky, Environment, Edges } from '@react-three/drei';
 import { useShipStore, getBlockBounds } from '../store/shipStore';
@@ -204,8 +204,46 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
   return null;
 }
 
+function PerformanceMonitor() {
+  const potatoMode = useShipStore(s => s.potatoMode);
+  const suggestPotatoMode = useShipStore(s => s.suggestPotatoMode);
+  const dismissedPotatoSuggestion = useShipStore(s => s.dismissedPotatoSuggestion);
+  const setSuggestPotatoMode = useShipStore(s => s.setSuggestPotatoMode);
+
+  const frameTimesRef = useRef<number[]>([]);
+  const consecLowFpsSecondsRef = useRef(0);
+
+  useFrame((_, delta) => {
+    if (potatoMode || dismissedPotatoSuggestion || suggestPotatoMode) return;
+
+    const cappedDelta = Math.min(delta, 0.1);
+    frameTimesRef.current.push(cappedDelta);
+    if (frameTimesRef.current.length > 60) {
+      frameTimesRef.current.shift();
+    }
+
+    if (frameTimesRef.current.length === 60) {
+      const sum = frameTimesRef.current.reduce((a, b) => a + b, 0);
+      const avgDelta = sum / 60;
+      const fps = 1 / avgDelta;
+
+      if (fps < 30) {
+        consecLowFpsSecondsRef.current += cappedDelta;
+        if (consecLowFpsSecondsRef.current >= 5) {
+          setSuggestPotatoMode(true);
+        }
+      } else {
+        consecLowFpsSecondsRef.current = Math.max(0, consecLowFpsSecondsRef.current - cappedDelta);
+      }
+    }
+  });
+
+  return null;
+}
+
 export function Scene() {
   const blocks = useShipStore(s => s.blocks);
+  const potatoMode = useShipStore(s => s.potatoMode);
   const activeTool = useShipStore(s => s.activeTool);
   const activeShape = useShipStore(s => s.activeShape);
   const setActiveTool = useShipStore(s => s.setActiveTool);
@@ -421,10 +459,11 @@ export function Scene() {
   return (
     <Canvas camera={{ position: [15, 15, 15], fov: 50 }}>
       <KeyboardHandler setRotation={setRotation} />
+      <PerformanceMonitor />
       <Sky sunPosition={[100, 20, 100]} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 20, 10]} intensity={1} castShadow />
-      <Environment preset="city" />
+      {!potatoMode && <Environment preset="city" />}
 
       <group
         onPointerDown={onPointerDown}

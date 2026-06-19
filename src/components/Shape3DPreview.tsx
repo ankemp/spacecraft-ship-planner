@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Edges } from '@react-three/drei';
 import { BlockGeometry } from './BlockGeometry';
+import { useShipStore } from '../store/shipStore';
 import * as THREE from 'three';
 
 interface Shape3DPreviewProps {
@@ -108,6 +109,24 @@ function PreviewMesh({
   );
 }
 
+function Shape2DPreview({ shapeId, color, className }: { shapeId: string; color: string; className?: string }) {
+  const path =
+    shapeId === 'slope'
+      ? 'M 6,26 L 26,26 L 26,6 Z'
+      : shapeId === 'slope_flat'
+      ? 'M 6,26 L 26,26 L 26,6 L 16,6 Z'
+      : 'M 6,26 L 26,26 L 26,6 L 6,6 Z';
+
+  return (
+    <div className={`${className} flex items-center justify-center p-0.5`}>
+      <svg viewBox="0 0 32 32" className="w-full h-full max-w-full max-h-full" style={{ aspectRatio: '1/1' }}>
+        <path d={path} fill={color} stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d={path} fill="none" stroke="#000000" strokeWidth="1.5" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
+
 export function Shape3DPreview({
   shapeId,
   color = '#909090',
@@ -119,6 +138,7 @@ export function Shape3DPreview({
   disableRotation = false,
   dimensions
 }: Shape3DPreviewProps) {
+  const potatoMode = useShipStore(s => s.potatoMode);
   const [localIsHovered, setLocalIsHovered] = useState(false);
   const isHovered = controlledIsHovered !== undefined ? controlledIsHovered : localIsHovered;
   const isControlled = controlledIsHovered !== undefined;
@@ -138,6 +158,10 @@ export function Shape3DPreview({
     setLocalIsHovered(false);
     localMouseRef.current = { x: 0, y: 0 };
   };
+
+  if (potatoMode) {
+    return <Shape2DPreview shapeId={shapeId} color={color} className={className} />;
+  }
 
   return (
     <div 
