@@ -186,4 +186,14 @@ export const FlipIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) 
         <path d="M12 5l-7 7 7 7z" />
         <path d="M12 5l7 7-7 7z" strokeOpacity="0.4" />
     </svg>
+);
+
+export const PotatoIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M 6 12 C 4 7, 10 3, 16 4 C 20 5, 21 9, 20 13 C 19 17, 16 20, 11 20 C 6 20, 8 16, 6 12 Z" />
+        <circle cx="9" cy="9" r="0.8" fill="black" opacity="0.35" />
+        <circle cx="14" cy="8" r="0.6" fill="black" opacity="0.35" />
+        <circle cx="11" cy="14" r="0.7" fill="black" opacity="0.35" />
+        <circle cx="16" cy="13" r="0.5" fill="black" opacity="0.35" />
+    </svg>
 );

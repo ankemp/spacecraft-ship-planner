@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useShipStore, selectBOM, selectDerivedStats } from '../store/shipStore';
 import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER, HULL_SHAPES } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
-import { CategoryIcon, GripIcon, StatIcon, RotateIcon, FlipIcon } from './Icon';
+import { CategoryIcon, GripIcon, StatIcon, RotateIcon, FlipIcon, PotatoIcon } from './Icon';
 import { Shape3DPreview } from './Shape3DPreview';
 
 const formatStatKey = (key: string): string => {
@@ -1965,13 +1965,7 @@ export function Overlay() {
               }`}
             title={potatoMode ? "Disable Potato Mode (High Quality)" : "Enable Potato Mode (Low Spec)"}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M 6 12 C 4 7, 10 3, 16 4 C 20 5, 21 9, 20 13 C 19 17, 16 20, 11 20 C 6 20, 8 16, 6 12 Z" />
-              <circle cx="9" cy="9" r="0.8" fill="black" opacity="0.35" />
-              <circle cx="14" cy="8" r="0.6" fill="black" opacity="0.35" />
-              <circle cx="11" cy="14" r="0.7" fill="black" opacity="0.35" />
-              <circle cx="16" cy="13" r="0.5" fill="black" opacity="0.35" />
-            </svg>
+            <PotatoIcon />
           </button>
 
         </div>
