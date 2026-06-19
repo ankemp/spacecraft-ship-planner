@@ -604,6 +604,7 @@ export function Overlay() {
                       mouseX={hoveredShapeId === shape.id ? cardMousePos.x : 0}
                       mouseY={hoveredShapeId === shape.id ? cardMousePos.y : 0}
                       className="w-full h-8 mb-1 flex-shrink-0"
+                      isActive={isActive}
                     />
                     <span className="text-[8px] font-semibold truncate max-w-full leading-none pointer-events-none">
                       {shape.name.split(' ')[0]}
@@ -641,6 +642,7 @@ export function Overlay() {
                     shapeId={def.group === 'Steel' || def.group === 'Titanium' ? activeShape : 'full'}
                     color={def.color}
                     disableRotation={true}
+                    disableLive3D={true}
                     dimensions={def.dimensions}
                     className="w-full h-full"
                   />
@@ -1483,6 +1485,7 @@ export function Overlay() {
                               mouseX={hoveredModifyShapeId === shape.id ? cardMousePos.x : 0}
                               mouseY={hoveredModifyShapeId === shape.id ? cardMousePos.y : 0}
                               className="w-full h-6 mb-1 flex-shrink-0"
+                              isActive={isActive}
                             />
                             <span className="text-[8px] font-semibold truncate max-w-full leading-none pointer-events-none">
                               {shape.name.split(' ')[0]}

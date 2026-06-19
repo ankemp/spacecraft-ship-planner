@@ -103,62 +103,66 @@ interface BlockGeometryProps {
 
 const geometryCache = new Map<string, THREE.BufferGeometry>();
 
-export function BlockGeometry({ shape = 'full', w, h, d, flipX = false, flipY = false, flipZ = false }: BlockGeometryProps) {
-  const geometry = useMemo(() => {
-    const key = `${shape}_${w}_${h}_${d}_${flipX ? '1' : '0'}_${flipY ? '1' : '0'}_${flipZ ? '1' : '0'}`;
-    const cached = geometryCache.get(key);
-    if (cached) return cached;
+export function getBufferGeometry(shape = 'full', w: number, h: number, d: number, flipX = false, flipY = false, flipZ = false): THREE.BufferGeometry {
+  const key = `${shape}_${w}_${h}_${d}_${flipX ? '1' : '0'}_${flipY ? '1' : '0'}_${flipZ ? '1' : '0'}`;
+  const cached = geometryCache.get(key);
+  if (cached) return cached;
 
-    const generator = (shape in SHAPE_GENERATORS)
-      ? SHAPE_GENERATORS[shape as ActiveShapeId]
-      : SHAPE_GENERATORS.full;
-    const geom = generator(w, h, d);
+  const generator = (shape in SHAPE_GENERATORS)
+    ? SHAPE_GENERATORS[shape as ActiveShapeId]
+    : SHAPE_GENERATORS.full;
+  const geom = generator(w, h, d);
 
-    let finalGeom = geom;
+  let finalGeom = geom;
 
-    if (flipX || flipY || flipZ) {
-      const geomClone = geom.clone();
-      const posAttr = geomClone.getAttribute('position') as THREE.BufferAttribute;
-      const arr = posAttr.array as Float32Array;
+  if (flipX || flipY || flipZ) {
+    const geomClone = geom.clone();
+    const posAttr = geomClone.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
 
-      // Apply mirroring
-      for (let i = 0; i < arr.length; i += 3) {
-        if (flipX) arr[i] = w - arr[i];
-        if (flipY) arr[i + 1] = h - arr[i + 1];
-        if (flipZ) arr[i + 2] = d - arr[i + 2];
-      }
+    // Apply mirroring
+    for (let i = 0; i < arr.length; i += 3) {
+      if (flipX) arr[i] = w - arr[i];
+      if (flipY) arr[i + 1] = h - arr[i + 1];
+      if (flipZ) arr[i + 2] = d - arr[i + 2];
+    }
 
-      // If winding order is inverted (odd number of flips), reverse the triangle index order to keep normals facing outward
-      const isWindingInverted = (flipX ? 1 : 0) ^ (flipY ? 1 : 0) ^ (flipZ ? 1 : 0);
-      if (isWindingInverted) {
-        const indexAttr = geomClone.getIndex();
-        if (indexAttr) {
-          const indices = indexAttr.array.slice() as Uint16Array | Uint32Array;
-          for (let i = 0; i < indices.length; i += 3) {
-            const temp = indices[i + 1];
-            indices[i + 1] = indices[i + 2];
-            indices[i + 2] = temp;
-          }
-          geomClone.setIndex(new THREE.BufferAttribute(indices, 1));
-        } else {
-          // Non-indexed: swap vertex 1 and vertex 2 of each triangle
-          for (let i = 0; i < arr.length; i += 9) {
-            for (let j = 0; j < 3; j++) {
-              const temp = arr[i + 3 + j];
-              arr[i + 3 + j] = arr[i + 6 + j];
-              arr[i + 6 + j] = temp;
-            }
+    // If winding order is inverted (odd number of flips), reverse the triangle index order to keep normals facing outward
+    const isWindingInverted = (flipX ? 1 : 0) ^ (flipY ? 1 : 0) ^ (flipZ ? 1 : 0);
+    if (isWindingInverted) {
+      const indexAttr = geomClone.getIndex();
+      if (indexAttr) {
+        const indices = indexAttr.array.slice() as Uint16Array | Uint32Array;
+        for (let i = 0; i < indices.length; i += 3) {
+          const temp = indices[i + 1];
+          indices[i + 1] = indices[i + 2];
+          indices[i + 2] = temp;
+        }
+        geomClone.setIndex(new THREE.BufferAttribute(indices, 1));
+      } else {
+        // Non-indexed: swap vertex 1 and vertex 2 of each triangle
+        for (let i = 0; i < arr.length; i += 9) {
+          for (let j = 0; j < 3; j++) {
+            const temp = arr[i + 3 + j];
+            arr[i + 3 + j] = arr[i + 6 + j];
+            arr[i + 6 + j] = temp;
           }
         }
       }
-
-      posAttr.needsUpdate = true;
-      geomClone.computeVertexNormals();
-      finalGeom = geomClone;
     }
 
-    geometryCache.set(key, finalGeom);
-    return finalGeom;
+    posAttr.needsUpdate = true;
+    geomClone.computeVertexNormals();
+    finalGeom = geomClone;
+  }
+
+  geometryCache.set(key, finalGeom);
+  return finalGeom;
+}
+
+export function BlockGeometry({ shape = 'full', w, h, d, flipX = false, flipY = false, flipZ = false }: BlockGeometryProps) {
+  const geometry = useMemo(() => {
+    return getBufferGeometry(shape, w, h, d, flipX, flipY, flipZ);
   }, [shape, w, h, d, flipX, flipY, flipZ]);
 
   return <primitive object={geometry} attach="geometry" />;
