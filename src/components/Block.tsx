@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, memo } from 'react';
-import { Edges } from '@react-three/drei';
+import { Edges, Text } from '@react-three/drei';
 import { BLOCK_DEFINITIONS } from '../config/blocks';
 import { useShipStore } from '../store/shipStore';
 import { BlockGeometry } from './BlockGeometry';
@@ -57,6 +57,45 @@ export const Block = memo(function Block({ id, type, position, rotation, color, 
 
   const [w, h, d] = def.dimensions;
   const isSelected = selectedBlockId === id;
+
+  const fX = !!flipX;
+  const fY = !!flipY;
+
+  // Helper to evaluate top surface Y and Z-tilt at any local X coordinate
+  const getTopSurfaceAt = (x: number) => {
+    const xEval = fX ? (w - x) : x;
+    let y = h;
+    let tilt = 0;
+
+    if (shape === 'slope') {
+      y = h * (xEval / w);
+      tilt = Math.atan2(h, w);
+    } else if (shape === 'slope_flat') {
+      const run = Math.min(w, 1);
+      if (xEval < run) {
+        y = h * (xEval / run);
+        tilt = Math.atan2(h, run);
+      } else {
+        y = h;
+        tilt = 0;
+      }
+    }
+
+    if (fX) tilt = -tilt;
+    return { y, tilt };
+  };
+
+  // Center X coordinate of the block
+  const centerX = w / 2;
+  const { y: topYRaw, tilt: topTiltRaw } = getTopSurfaceAt(centerX);
+
+  // Top face position & rotation (adjusts for vertical flips)
+  const topGroupPos: [number, number, number] = [centerX, fY ? h - topYRaw : topYRaw, d / 2];
+  const topGroupRot: [number, number, number] = [0, 0, fY ? -topTiltRaw : topTiltRaw];
+
+  // Bottom face position & rotation (adjusts for vertical flips)
+  const bottomGroupPos: [number, number, number] = [centerX, fY ? h : 0, d / 2];
+  const bottomGroupRot: [number, number, number] = [0, 0, 0];
 
   return (
     <group position={position} rotation={rotation}>
@@ -130,18 +169,52 @@ export const Block = memo(function Block({ id, type, position, rotation, color, 
       </mesh>
  
       {isSelected && (
-        <mesh raycast={() => null} position={[-0.025, -0.025, -0.025]}>
-          <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} flipX={flipX} flipY={flipY} flipZ={flipZ} />
-          <meshBasicMaterial visible={false} />
-          <Edges color="#ffaa00" scale={1.01} />
-        </mesh>
+        <>
+          <mesh raycast={() => null} position={[-0.025, -0.025, -0.025]} renderOrder={9999}>
+            <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} flipX={flipX} flipY={flipY} flipZ={flipZ} />
+            <meshBasicMaterial visible={false} />
+            <Edges color="#ffaa00" scale={1.01} depthTest={false} renderOrder={9999} />
+          </mesh>
+          <group position={topGroupPos} rotation={topGroupRot}>
+            <Text
+              position={[0, fY ? -0.005 : 0.005, 0]}
+              rotation={fY ? [Math.PI / 2, 0, 0] : [-Math.PI / 2, 0, 0]}
+              fontSize={Math.min(w, d) * 0.25}
+              color="#ffaa00"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(w, d) * 0.025}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              Top
+            </Text>
+          </group>
+          <group position={bottomGroupPos} rotation={bottomGroupRot}>
+            <Text
+              position={[0, fY ? 0.005 : -0.005, 0]}
+              rotation={fY ? [-Math.PI / 2, 0, 0] : [Math.PI / 2, 0, 0]}
+              fontSize={Math.min(w, d) * 0.25}
+              color="#ffaa00"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(w, d) * 0.025}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              Bottom
+            </Text>
+          </group>
+        </>
       )}
  
       {!isSelected && isHovered && (
-        <mesh raycast={() => null} position={[-0.025, -0.025, -0.025]}>
+        <mesh raycast={() => null} position={[-0.025, -0.025, -0.025]} renderOrder={9999}>
           <BlockGeometry shape={shape} w={w + 0.05} h={h + 0.05} d={d + 0.05} flipX={flipX} flipY={flipY} flipZ={flipZ} />
           <meshBasicMaterial visible={false} />
-          <Edges color="#3b82f6" scale={1.01} />
+          <Edges color="#3b82f6" scale={1.01} depthTest={false} renderOrder={9999} />
         </mesh>
       )}
     </group>
