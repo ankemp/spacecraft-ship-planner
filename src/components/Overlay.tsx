@@ -232,7 +232,10 @@ export function Overlay() {
 
   // Redesigned UI states
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
-  const [showHotkeys, setShowHotkeys] = useState(false);
+  const [showHotkeys, setShowHotkeys] = useState<boolean>(() => {
+    const saved = localStorage.getItem('spacecraft_show_hotkeys');
+    return saved === null ? true : saved === 'true';
+  });
   const [showBackgroundMenu, setShowBackgroundMenu] = useState(false);
 
   // Collapsible panels states
@@ -427,6 +430,10 @@ export function Overlay() {
     }, 3000);
     return () => clearTimeout(timer);
   }, [toast, setToast]);
+
+  useEffect(() => {
+    localStorage.setItem('spacecraft_show_hotkeys', String(showHotkeys));
+  }, [showHotkeys]);
 
   const [prevActiveTool, setPrevActiveTool] = useState(activeTool);
 
