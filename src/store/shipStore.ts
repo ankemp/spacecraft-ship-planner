@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as THREE from 'three';
 import { BLOCK_DEFINITIONS } from '../config/blocks';
 import { deserializeBlocks } from '../utils/serialization';
+import { computeDerivedStats } from '../utils/shipStats';
 
 export interface BlockInstance {
   id: string;
@@ -563,4 +564,8 @@ export const selectStats = (state: ShipStore | { blocks: BlockInstance[] }) => {
   });
 
   return totals;
+};
+
+export const selectDerivedStats = (state: ShipStore | { blocks: BlockInstance[] }) => {
+  return computeDerivedStats(state.blocks);
 };

@@ -120,6 +120,64 @@ export const STAT_METADATA: Record<string, StatMetadata> = {
     color: 'text-orange-500',
     icon: 'boost-heat',
   },
+  frame: {
+    name: 'Frame',
+    color: 'text-amber-400',
+    icon: 'shield',
+  },
+  heatDissipation: {
+    name: 'Heat Dissipation',
+    unit: 'kW',
+    color: 'text-sky-400',
+    icon: 'interface',
+  },
+  heatGeneration: {
+    name: 'Heat Generation',
+    unit: 'kW',
+    color: 'text-red-500',
+    icon: 'fire',
+  },
+  heatInterface: {
+    name: 'Heat Interface',
+    color: 'text-orange-300',
+    icon: 'interface',
+  },
+  hullImpactDamage: {
+    name: 'Hull Impact Damage',
+    unit: '%',
+    color: 'text-rose-400',
+    icon: 'shield',
+  },
+  powerGeneration: {
+    name: 'Power Generation',
+    unit: 'kW',
+    color: 'text-green-400',
+    icon: 'power',
+  },
+  powerStorage: {
+    name: 'Power Storage',
+    unit: 'kWh',
+    color: 'text-green-300',
+    icon: 'power',
+  },
+  maxChargeSpeed: {
+    name: 'Max Charge Speed',
+    unit: 'kW',
+    color: 'text-green-200',
+    icon: 'power',
+  },
+  theoreticalEfficiency: {
+    name: 'Theoretical Efficiency',
+    unit: '%',
+    color: 'text-green-400',
+    icon: 'circuit-board',
+  },
+  selfDischarge: {
+    name: 'Self Discharge',
+    unit: 'kW',
+    color: 'text-green-500',
+    icon: 'power',
+  },
 };
 
 export const BLOCK_GROUP_ORDER: string[] = [
