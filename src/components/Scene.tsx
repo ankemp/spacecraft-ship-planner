@@ -600,7 +600,7 @@ export function Scene() {
         cellThickness={1.0}
         sectionThickness={1.5}
       />
-      <OrbitControls makeDefault />
+      <OrbitControls makeDefault minDistance={30} maxDistance={160} />
     </Canvas>
   );
 }
