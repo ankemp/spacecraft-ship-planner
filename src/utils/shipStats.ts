@@ -139,7 +139,7 @@ export function computeDerivedStats(blocks: BlockInstance[]): DerivedShipStats {
   const disconnectedBlockIds: string[] = [];
 
   if (blocks.length > 0) {
-    const blockBounds = blocks.map(b => getBlockBounds(b.type, b.position, b.rotation));
+    const blockBounds = blocks.map(b => b.bounds || getBlockBounds(b.type, b.position, b.rotation));
     const isCockpit = blocks.map(b => BLOCK_DEFINITIONS[b.type]?.group === 'Cockpits');
 
     const visited = new Set<number>();

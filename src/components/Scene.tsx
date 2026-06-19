@@ -282,7 +282,12 @@ export function Scene() {
     const nx = Math.round(normal.x);
     const ny = Math.round(normal.y);
     const nz = Math.round(normal.z);
-    setCursorNormal([nx, ny, nz]);
+    setCursorNormal(prev => {
+      if (prev && prev[0] === nx && prev[1] === ny && prev[2] === nz) {
+        return prev;
+      }
+      return [nx, ny, nz];
+    });
 
     // Add a tiny bit of the normal to the hit point to ensure we pick the adjacent cell
     const hitPoint = point.add(normal.clone().multiplyScalar(0.1));
@@ -290,7 +295,12 @@ export function Scene() {
     const cy = Math.max(0, Math.floor(hitPoint.y));
     const cz = Math.floor(hitPoint.z);
 
-    setCursorPos([cx, cy, cz]);
+    setCursorPos(prev => {
+      if (prev && prev[0] === cx && prev[1] === cy && prev[2] === cz) {
+        return prev;
+      }
+      return [cx, cy, cz];
+    });
   };
 
   const onPointerOut = () => {

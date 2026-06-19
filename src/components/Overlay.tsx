@@ -20,11 +20,10 @@ export function Overlay() {
   const setActiveShape = useShipStore(s => s.setActiveShape);
   const clearShip = useShipStore(s => s.clearShip);
   const setBlocks = useShipStore(s => s.setBlocks);
-  const smallSteelParts = useShipStore(s => selectBOM(s).smallSteelParts);
-  const smallTitaniumParts = useShipStore(s => selectBOM(s).smallTitaniumParts);
-  const titaniumParts = useShipStore(s => selectBOM(s).titaniumParts);
-  const supportHardware = useShipStore(s => selectBOM(s).supportHardware);
   const blocks = useShipStore(s => s.blocks);
+
+  const bom = selectBOM({ blocks });
+  const { smallSteelParts, smallTitaniumParts, titaniumParts, supportHardware } = bom;
 
   const derivedStats = selectDerivedStats({ blocks });
   const shipStats = derivedStats.raw;

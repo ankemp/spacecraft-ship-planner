@@ -15,6 +15,7 @@ export interface BlockInstance {
   flipX?: boolean;
   flipY?: boolean;
   flipZ?: boolean;
+  bounds?: BlockBounds;
 }
 
 export interface BlockBounds {
@@ -24,6 +25,17 @@ export interface BlockBounds {
   maxY: number;
   minZ: number;
   maxZ: number;
+}
+
+export function isBoundsColliding(b1: BlockBounds, b2: BlockBounds): boolean {
+  return (
+    b1.minX < b2.maxX &&
+    b1.maxX > b2.minX &&
+    b1.minY < b2.maxY &&
+    b1.maxY > b2.minY &&
+    b1.minZ < b2.maxZ &&
+    b1.maxZ > b2.minZ
+  );
 }
 
 export interface SavedShip {
@@ -128,20 +140,7 @@ export function getBlockBounds(type: string, position: [number, number, number],
   };
 }
 
-// AABB Intersection check
-function isColliding(b1: { type: string, position: [number, number, number], rotation: [number, number, number] }, b2: BlockInstance): boolean {
-  const bounds1 = getBlockBounds(b1.type, b1.position, b1.rotation);
-  const bounds2 = getBlockBounds(b2.type, b2.position, b2.rotation);
 
-  return (
-    bounds1.minX < bounds2.maxX &&
-    bounds1.maxX > bounds2.minX &&
-    bounds1.minY < bounds2.maxY &&
-    bounds1.maxY > bounds2.minY &&
-    bounds1.minZ < bounds2.maxZ &&
-    bounds1.maxZ > bounds2.minZ
-  );
-}
 
 // Helpers for localStorage sync
 const saveAutosave = (blocks: BlockInstance[]) => {
@@ -158,11 +157,12 @@ const getInitialBlocks = (): BlockInstance[] => {
     if (shipParam) {
       const decoded = deserializeBlocks(shipParam);
       if (decoded && decoded.length > 0) {
-        saveAutosave(decoded);
+        const blocksWithBounds = decoded.map(b => b.bounds ? b : { ...b, bounds: getBlockBounds(b.type, b.position, b.rotation) });
+        saveAutosave(blocksWithBounds);
         // Clean the URL query param so refresh/edit has clean URL
         const newUrl = window.location.pathname + window.location.hash;
         window.history.replaceState(null, '', newUrl);
-        return decoded;
+        return blocksWithBounds;
       }
     }
 
@@ -170,7 +170,8 @@ const getInitialBlocks = (): BlockInstance[] => {
     const autosave = localStorage.getItem('spacecraft_shipbuilder_autosave');
     if (autosave) {
       try {
-        return JSON.parse(autosave);
+        const parsed = JSON.parse(autosave) as BlockInstance[];
+        return parsed.map(b => b.bounds ? b : { ...b, bounds: getBlockBounds(b.type, b.position, b.rotation) });
       } catch (e) {
         console.error('Failed to parse autosave from localStorage', e);
       }
@@ -205,8 +206,9 @@ export const useShipStore = create<ShipStore>((set, get) => ({
   savedShips: getInitialSavedShips(),
   toast: null,
   setBlocks: (blocks) => {
-    set({ blocks });
-    saveAutosave(blocks);
+    const blocksWithBounds = blocks.map(b => b.bounds ? b : { ...b, bounds: getBlockBounds(b.type, b.position, b.rotation) });
+    set({ blocks: blocksWithBounds });
+    saveAutosave(blocksWithBounds);
   },
   setActiveTool: (type) => set({ activeTool: type }),
   setActiveShape: (shape) => set({ activeShape: shape }),
@@ -221,14 +223,14 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     const { blocks } = get();
     
     // Check floor boundary
-    const bounds = getBlockBounds(type, position, rotation);
-    if (bounds.minY < 0) {
+    const bounds1 = getBlockBounds(type, position, rotation);
+    if (bounds1.minY < 0) {
       return true;
     }
 
-    const tempBlock = { type, position, rotation };
     for (const b of blocks) {
-      if (isColliding(tempBlock, b)) {
+      const bounds2 = b.bounds || getBlockBounds(b.type, b.position, b.rotation);
+      if (isBoundsColliding(bounds1, bounds2)) {
         return true;
       }
     }
@@ -252,6 +254,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     }
 
     const isHull = blockDef && (blockDef.group === 'Steel' || blockDef.group === 'Titanium');
+    const bounds = getBlockBounds(type, position, rotation);
 
     const newBlock: BlockInstance = {
       id: uuidv4(),
@@ -262,6 +265,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       flipX: isHull ? activeFlipX : undefined,
       flipY: isHull ? activeFlipY : undefined,
       flipZ: isHull ? activeFlipZ : undefined,
+      bounds,
     };
 
     const nextBlocks = [...blocks, newBlock];
@@ -321,6 +325,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     }
     
     const isHull = blockDef && (blockDef.group === 'Steel' || blockDef.group === 'Titanium');
+    const bounds = getBlockBounds(movingBlock.type, position, rotation);
     const placedBlock: BlockInstance = {
       ...movingBlock,
       position,
@@ -330,6 +335,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
         flipY: activeFlipY,
         flipZ: activeFlipZ,
       } : {}),
+      bounds,
     };
     
     const nextBlocks = [...blocks, placedBlock];
@@ -373,14 +379,14 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       return false;
     }
     
-    const tempBlock = { type: block.type, position: newPos, rotation: block.rotation };
     for (const b of otherBlocks) {
-      if (isColliding(tempBlock, b)) {
+      const b2Bounds = b.bounds || getBlockBounds(b.type, b.position, b.rotation);
+      if (isBoundsColliding(bounds, b2Bounds)) {
         return false;
       }
     }
     
-    const nextBlocks = blocks.map(b => b.id === id ? { ...b, position: newPos } : b);
+    const nextBlocks = blocks.map(b => b.id === id ? { ...b, position: newPos, bounds } : b);
     set({ blocks: nextBlocks });
     saveAutosave(nextBlocks);
     return true;
@@ -396,7 +402,7 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     const [w, h, d] = def.dimensions;
 
     // 1. Compute bounds
-    const oldBounds = getBlockBounds(block.type, block.position, block.rotation);
+    const oldBounds = block.bounds || getBlockBounds(block.type, block.position, block.rotation);
 
     // 2. Compute new rotation
     const newRot: [number, number, number] = [...block.rotation];
@@ -439,14 +445,14 @@ export const useShipStore = create<ShipStore>((set, get) => ({
       return false;
     }
     
-    const tempBlock = { type: block.type, position: newPos, rotation: newRot };
     for (const b of otherBlocks) {
-      if (isColliding(tempBlock, b)) {
+      const b2Bounds = b.bounds || getBlockBounds(b.type, b.position, b.rotation);
+      if (isBoundsColliding(bounds, b2Bounds)) {
         return false;
       }
     }
     
-    const nextBlocks = blocks.map(b => b.id === id ? { ...b, position: newPos, rotation: newRot } : b);
+    const nextBlocks = blocks.map(b => b.id === id ? { ...b, position: newPos, rotation: newRot, bounds } : b);
     set({ blocks: nextBlocks });
     saveAutosave(nextBlocks);
     return true;

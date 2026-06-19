@@ -101,12 +101,20 @@ interface BlockGeometryProps {
   flipZ?: boolean;
 }
 
+const geometryCache = new Map<string, THREE.BufferGeometry>();
+
 export function BlockGeometry({ shape = 'full', w, h, d, flipX = false, flipY = false, flipZ = false }: BlockGeometryProps) {
   const geometry = useMemo(() => {
+    const key = `${shape}_${w}_${h}_${d}_${flipX ? '1' : '0'}_${flipY ? '1' : '0'}_${flipZ ? '1' : '0'}`;
+    const cached = geometryCache.get(key);
+    if (cached) return cached;
+
     const generator = (shape in SHAPE_GENERATORS)
       ? SHAPE_GENERATORS[shape as ActiveShapeId]
       : SHAPE_GENERATORS.full;
     const geom = generator(w, h, d);
+
+    let finalGeom = geom;
 
     if (flipX || flipY || flipZ) {
       const geomClone = geom.clone();
@@ -146,10 +154,11 @@ export function BlockGeometry({ shape = 'full', w, h, d, flipX = false, flipY = 
 
       posAttr.needsUpdate = true;
       geomClone.computeVertexNormals();
-      return geomClone;
+      finalGeom = geomClone;
     }
 
-    return geom;
+    geometryCache.set(key, finalGeom);
+    return finalGeom;
   }, [shape, w, h, d, flipX, flipY, flipZ]);
 
   return <primitive object={geometry} attach="geometry" />;
