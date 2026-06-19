@@ -20,6 +20,8 @@ export interface BlockDefinition {
   plannerPartName?: string;
   stats?: Record<string, number>;
   tags?: string[];
+  allowedFlips?: ('x' | 'y' | 'z')[];
+  allowedRotations?: ('x' | 'y' | 'z')[];
 }
 
 export interface BlockShapeDefinition {
@@ -196,7 +198,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_001',
-    stats: { systemSupport: 240, frame: 36, weight: 30.0, hull: 15, heatCapacity: 30, materialHeatConductivity: 60 }
+    stats: { systemSupport: 240, frame: 36, weight: 30.0, hull: 15, heatCapacity: 30, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   steel_4x3x1: {
     type: 'steel_4x3x1',
@@ -206,7 +210,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_004',
-    stats: { systemSupport: 96, frame: 40, weight: 20.0, hull: 10, heatCapacity: 20, materialHeatConductivity: 60 }
+    stats: { systemSupport: 96, frame: 40, weight: 20.0, hull: 10, heatCapacity: 20, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   steel_6x3x2: {
     type: 'steel_6x3x2',
@@ -216,7 +222,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_002',
-    stats: { systemSupport: 360, frame: 0, weight: 0, hull: 0, heatCapacity: 45, materialHeatConductivity: 60 }
+    stats: { systemSupport: 360, frame: 0, weight: 0, hull: 0, heatCapacity: 45, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   steel_6x3x1: {
     type: 'steel_6x3x1',
@@ -226,7 +234,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_005',
-    stats: { systemSupport: 144, frame: 0, weight: 0, hull: 0, heatCapacity: 30, materialHeatConductivity: 60 }
+    stats: { systemSupport: 144, frame: 0, weight: 0, hull: 0, heatCapacity: 30, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   steel_8x3x2: {
     type: 'steel_8x3x2',
@@ -236,7 +246,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_003',
-    stats: { systemSupport: 480, frame: 0, weight: 0, hull: 0, heatCapacity: 60, materialHeatConductivity: 60 }
+    stats: { systemSupport: 480, frame: 0, weight: 0, hull: 0, heatCapacity: 60, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   steel_8x3x1: {
     type: 'steel_8x3x1',
@@ -246,7 +258,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#909090',
     group: 'Steel',
     plannerPartName: 'hull_mk_1_006',
-    stats: { systemSupport: 192, frame: 0, weight: 0, hull: 0, heatCapacity: 40, materialHeatConductivity: 60 }
+    stats: { systemSupport: 192, frame: 0, weight: 0, hull: 0, heatCapacity: 40, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_4x3x1: {
     type: 'titanium_4x3x1',
@@ -256,7 +270,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_1_004_tit',
-    stats: { systemSupport: 96, frame: 40, weight: 16, hull: 10, heatCapacity: 22, materialHeatConductivity: 60 }
+    stats: { systemSupport: 96, frame: 40, weight: 16, hull: 10, heatCapacity: 22, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_4x3x2: {
     type: 'titanium_4x3x2',
@@ -266,7 +282,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_1_001_tit',
-    stats: { systemSupport: 240, frame: 36, weight: 24, hull: 15, heatCapacity: 33, materialHeatConductivity: 60 }
+    stats: { systemSupport: 240, frame: 36, weight: 24, hull: 15, heatCapacity: 33, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_6x3x1: {
     type: 'titanium_6x3x1',
@@ -276,7 +294,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_1_005_tit',
-    stats: { systemSupport: 144, frame: 60, weight: 24, hull: 15, heatCapacity: 33, materialHeatConductivity: 60 }
+    stats: { systemSupport: 144, frame: 60, weight: 24, hull: 15, heatCapacity: 33, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_6x3x2: {
     type: 'titanium_6x3x2',
@@ -286,7 +306,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_1_002_tit',
-    stats: { systemSupport: 360, frame: 54, weight: 36, hull: 22.5, heatCapacity: 49.5, materialHeatConductivity: 60 }
+    stats: { systemSupport: 360, frame: 54, weight: 36, hull: 22.5, heatCapacity: 49.5, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_8x3x1: {
     type: 'titanium_8x3x1',
@@ -296,7 +318,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_1_006_tit',
-    stats: { systemSupport: 192, frame: 80, weight: 32, hull: 20, heatCapacity: 44, materialHeatConductivity: 60 }
+    stats: { systemSupport: 192, frame: 80, weight: 32, hull: 20, heatCapacity: 44, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_8x3x2: {
     type: 'titanium_8x3x2',
@@ -306,7 +330,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_1_003_tit',
-    stats: { systemSupport: 480, frame: 72, weight: 48, hull: 30, heatCapacity: 66, materialHeatConductivity: 60 }
+    stats: { systemSupport: 480, frame: 72, weight: 48, hull: 30, heatCapacity: 66, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_8x6x2: {
     type: 'titanium_8x6x2',
@@ -316,7 +342,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_2_004_tit',
-    stats: { systemSupport: 480, frame: 256, weight: 64, hull: 20, heatCapacity: 88, materialHeatConductivity: 60 }
+    stats: { systemSupport: 480, frame: 256, weight: 64, hull: 20, heatCapacity: 88, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_12x6x2: {
     type: 'titanium_12x6x2',
@@ -326,7 +354,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_2_005_tit',
-    stats: { systemSupport: 720, frame: 384, weight: 96, hull: 30, heatCapacity: 132, materialHeatConductivity: 60 }
+    stats: { systemSupport: 720, frame: 384, weight: 96, hull: 30, heatCapacity: 132, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   titanium_16x6x2: {
     type: 'titanium_16x6x2',
@@ -336,7 +366,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#7a919e',
     group: 'Titanium',
     plannerPartName: 'hull_mk_2_006_tit',
-    stats: { systemSupport: 960, frame: 512, weight: 128, hull: 40, heatCapacity: 176, materialHeatConductivity: 60 }
+    stats: { systemSupport: 960, frame: 512, weight: 128, hull: 40, heatCapacity: 176, materialHeatConductivity: 60 },
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
   },
   thruster_cart_pusher: {
     type: 'thruster_cart_pusher',
@@ -354,7 +386,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       boostThrust: 100,
       boostPowerConsumption: 100,
       boostHeatGeneration: 1000
-    }
+    },
+    allowedFlips: [],
+    allowedRotations: ['x']
   },
   thruster_quiet_breeze: {
     type: 'thruster_quiet_breeze',
@@ -372,7 +406,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       powerConsumption: 15,
       steeringStrength: 15,
     },
-    tags: ['Size Incorrect']
+    tags: ['Size Incorrect'],
+    allowedFlips: [],
+    allowedRotations: ['x']
   },
   thruster_voidseeker: {
     type: 'thruster_voidseeker',
@@ -390,7 +426,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       boostThrust: 80,
       boostPowerConsumption: 80,
       boostHeatGeneration: 800
-    }
+    },
+    allowedFlips: [],
+    allowedRotations: ['x']
   },
   thruster_grasshopper: {
     type: 'thruster_grasshopper',
@@ -410,7 +448,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       boostPowerConsumption: 150,
       heatDissipation: 50
     },
-    tags: ['Size Incorrect']
+    tags: ['Size Incorrect'],
+    allowedFlips: [],
+    allowedRotations: ['x']
   },
   thruster_silent: {
     type: 'thruster_silent',
@@ -430,7 +470,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
       boostPowerConsumption: 150,
       boostHeatGeneration: 500
     },
-    tags: ['Size Incorrect']
+    tags: ['Size Incorrect'],
+    allowedFlips: [],
+    allowedRotations: ['x']
   },
   cockpit_pathfinder: {
     type: 'cockpit_pathfinder',
@@ -440,7 +482,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     color: '#2288ff',
     group: 'Cockpits',
     plannerPartName: 'cockpit_ae_1',
-    stats: { systemSupport: 200, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 60 }
+    stats: { systemSupport: 200, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 60 },
+    allowedFlips: [],
+    allowedRotations: []
   },
   cockpit_brick: {
     type: 'cockpit_brick',
@@ -451,7 +495,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     group: 'Cockpits',
     plannerPartName: 'cockpit_tc_1',
     stats: { systemSupport: 200, frame: 20, weight: 40, heatInterface: 60 },
-    tags: ['Size Incorrect']
+    tags: ['Size Incorrect'],
+    allowedFlips: [],
+    allowedRotations: []
   },
   cockpit_beaver: {
     type: 'cockpit_beaver',
@@ -462,7 +508,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     group: 'Cockpits',
     plannerPartName: 'cockpit_mk_1',
     stats: { systemSupport: 100, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 60, hullImpactDamage: -40 },
-    tags: ['Size Incorrect']
+    tags: ['Size Incorrect'],
+    allowedFlips: [],
+    allowedRotations: []
   },
   cockpit_cocoon: {
     type: 'cockpit_cocoon',
@@ -473,6 +521,8 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     group: 'Cockpits',
     plannerPartName: 'cockpit_da_1',
     stats: { systemSupport: 100, frame: 48, weight: 40, heatCapacity: 40, heatInterface: 40, hullImpactDamage: -40, heatDissipation: 300, heatGeneration: 4000 },
-    tags: ['Size Incorrect']
+    tags: ['Size Incorrect'],
+    allowedFlips: [],
+    allowedRotations: []
   }
 };

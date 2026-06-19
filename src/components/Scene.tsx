@@ -70,57 +70,58 @@ function KeyboardHandler({ setRotation }: KeyboardHandlerProps) {
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       const key = e.key.toLowerCase();
 
-      // Check if rotation/flipping is allowed (only for Thrusters)
+      // Check if rotation/flipping is allowed
       const isPlacingOrMoving = !!movingBlock || activeTool !== 'select';
       const targetType = movingBlock
         ? movingBlock.type
         : (activeTool !== 'select' ? activeTool : null);
 
-      const isEngine = targetType
-        ? BLOCK_DEFINITIONS[targetType]?.group === 'Thrusters'
-        : false;
+      const targetDef = targetType ? BLOCK_DEFINITIONS[targetType] : null;
+      const targetAllowedRotations = targetDef?.allowedRotations || [];
+      const targetAllowedFlips = targetDef?.allowedFlips || [];
 
       const selectedBlock = selectedBlockId ? blocks.find(b => b.id === selectedBlockId) : null;
-      const isSelectedEngine = selectedBlock
-        ? BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Thrusters'
-        : false;
-
-      const isHull = targetType
-        ? (BLOCK_DEFINITIONS[targetType]?.group === 'Steel' || BLOCK_DEFINITIONS[targetType]?.group === 'Titanium')
-        : false;
-      const isSelectedHull = selectedBlock
-        ? (BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Steel' || BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Titanium')
-        : false;
+      const selectedDef = selectedBlock ? BLOCK_DEFINITIONS[selectedBlock.type] : null;
+      const selectedAllowedRotations = selectedDef?.allowedRotations || [];
+      const selectedAllowedFlips = selectedDef?.allowedFlips || [];
 
       if (key === 'x') {
         if (isPlacingOrMoving) {
-          if (isEngine) {
+          if (targetAllowedRotations.includes('x')) {
             setRotation(prev => [(prev[0] + Math.PI / 2) % (Math.PI * 2), prev[1], prev[2]]);
-          } else if (isHull) {
+          } else if (targetAllowedFlips.includes('x')) {
             setActiveFlipX(!activeFlipX);
           }
         } else if (selectedBlockId && !movingBlock) {
-          if (isSelectedEngine) {
+          if (selectedAllowedRotations.includes('x')) {
             rotateBlock(selectedBlockId, 'x');
-          } else if (isSelectedHull) {
+          } else if (selectedAllowedFlips.includes('x')) {
             flipBlock(selectedBlockId, 'x');
           }
         }
       }
 
       if (key === 'y') {
-        if (isPlacingOrMoving && isHull) {
-          setActiveFlipY(!activeFlipY);
-        } else if (selectedBlockId && !movingBlock && isSelectedHull) {
-          flipBlock(selectedBlockId, 'y');
+        if (isPlacingOrMoving) {
+          if (targetAllowedFlips.includes('y')) {
+            setActiveFlipY(!activeFlipY);
+          }
+        } else if (selectedBlockId && !movingBlock) {
+          if (selectedAllowedFlips.includes('y')) {
+            flipBlock(selectedBlockId, 'y');
+          }
         }
       }
 
       if (key === 'z') {
-        if (isPlacingOrMoving && isHull) {
-          setActiveFlipZ(!activeFlipZ);
-        } else if (selectedBlockId && !movingBlock && isSelectedHull) {
-          flipBlock(selectedBlockId, 'z');
+        if (isPlacingOrMoving) {
+          if (targetAllowedFlips.includes('z')) {
+            setActiveFlipZ(!activeFlipZ);
+          }
+        } else if (selectedBlockId && !movingBlock) {
+          if (selectedAllowedFlips.includes('z')) {
+            flipBlock(selectedBlockId, 'z');
+          }
         }
       }
 

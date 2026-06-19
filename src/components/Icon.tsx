@@ -153,4 +153,37 @@ export const GripIcon = () => (
         <circle cx="8" cy="18" r="2" />
         <circle cx="16" cy="18" r="2" />
     </svg>
+);
+
+export const RotateIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <path d="M21.5 2v6h-6" />
+        <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l.73-1.19" />
+    </svg>
+);
+
+export const FlipIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <line x1="12" y1="2" x2="12" y2="22" strokeDasharray="3 3" />
+        <path d="M12 5l-7 7 7 7z" />
+        <path d="M12 5l7 7-7 7z" strokeOpacity="0.4" />
+    </svg>
 );

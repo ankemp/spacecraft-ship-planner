@@ -490,6 +490,11 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     
     const def = BLOCK_DEFINITIONS[block.type];
     if (!def) return false;
+
+    // Enforce configuration-driven constraints
+    const allowedRotations = def.allowedRotations || [];
+    if (!allowedRotations.includes(axis)) return false;
+
     const [w, h, d] = def.dimensions;
 
     // 1. Compute bounds
@@ -555,7 +560,11 @@ export const useShipStore = create<ShipStore>((set, get) => ({
     if (!block) return false;
 
     const def = BLOCK_DEFINITIONS[block.type];
-    if (!def || (def.group !== 'Steel' && def.group !== 'Titanium')) return false;
+    if (!def) return false;
+
+    // Enforce configuration-driven constraints
+    const allowedFlips = def.allowedFlips || [];
+    if (!allowedFlips.includes(axis)) return false;
 
     const nextBlocks = blocks.map(b => {
       if (b.id === id) {

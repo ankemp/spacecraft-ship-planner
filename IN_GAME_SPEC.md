@@ -24,11 +24,12 @@ This document details the core shipbuilding and flight systems as they function 
 ## 3. Orientation & Flip System
 
 In-game block orientation differs from free 3D rotation:
-* **Flipping over Rotation**: There is no free 90-degree or 270-degree yaw/pitch/roll rotation. Blocks have a default predefined orientation and are adjusted via three independent binary flips:
+* **Flipping over Rotation**: There is no free 90-degree or 270-degree yaw/pitch/roll rotation for most blocks. Structural blocks (Steel, Titanium) and other standard components have a default predefined orientation and are adjusted via three independent binary flips:
   * **Flip X**: Mirrors the block along the East-West axis.
   * **Flip Y**: Mirrors the block along the Up-Down axis (toggles upside down).
   * **Flip Z**: Mirrors the block along the North-South axis.
-* **Grid Bounds Impact**: Because there is no 90-degree rotation, a block's dimensions along the X, Y, and Z axes are always equal to its default dimensions. Mirroring/flipping only affects visual representation and internal/docking details; it does not change the grid occupancy bounds.
+* **Thruster Exception**: Thrusters are a key exception. They can be rotated in 90-degree increments on their local X-axis to direct thrust and steering force vectors.
+* **Grid Bounds Impact**: For standard blocks, because there is no 90-degree rotation, a block's dimensions along the X, Y, and Z axes are always equal to its default dimensions. Mirroring/flipping only affects visual representation and internal/docking details; it does not change the grid occupancy bounds. (For rotated thrusters, their bounds adapt to the rotated orientation).
 
 ---
 
@@ -84,6 +85,7 @@ In-game block orientation differs from free 3D rotation:
 * **Force vs. Thrust**:
   * **Force**: Represents the engine load capacity/power limit.
   * **Thrust**: The actual forward linear push force measured in kilonewtons (kN).
+* **Thruster Rotation**: Thrusters can be rotated in 90-degree increments on the X-axis to direct thrust along different vectors (e.g., forward, lateral, vertical).
 * **Steering Strength**: Determines the ship's rotational agility.
 * **Boost Mechanics**:
   * Boosting adds its values to the normal operating values:
@@ -99,20 +101,4 @@ In-game block orientation differs from free 3D rotation:
 * **Cosmetic Hull Shapes**: Hull shapes (Full Block, Slope, Slope Flat) are **purely cosmetic**.
 * **Dimensions & Stats**: Selecting a Slope or Slope Flat does not reduce the block's physical grid collision bounds, weight, hull strength, or resource costs. They are treated identical to a Full Block by the physics and calculation engines.
 
----
 
-## 10. Gap Analysis: Current App vs. In-Game Mechanics
-
-Below is a comparison of how the current web application matches up with the true in-game behavior, highlighting what needs to be added or modified in the app:
-
-| Mechanic | In-Game Behavior | Current App Implementation | Status/Gap |
-| :--- | :--- | :--- | :--- |
-| **Grid Boundaries** | Infinite relative to core, minimum floor plane at $Y = 0$. | Implemented floor check at $Y = 0$. | Matches |
-| **Adjacency / Connection** | Contiguous structure; face-to-face connection to cockpit required. | No connection check; blocks can float disconnected. | **Gap: Needs connectivity validation.** |
-| **Orientation** | Predefined direction + 3 binary flips (X, Y, Z). No 90-degree yaw/pitch/roll. | Supports 90-degree rotation axes via `rotateBlock` and Euler angles. | **Gap: Alignment with binary flips constraint.** |
-| **SP & Efficiency** | Summed SP; efficiency drops if consumed > provided. | Simple sums of stats; no efficiency formula. | **Gap: Needs efficiency calculation & display.** |
-| **Power System** | Global power balance; batteries required; speed drops to 15% if depleted. | Stats summed; no power balance or battery requirements modeled. | **Gap: Needs power balance and speed-reduction logic.** |
-| **Heat / Thermal** | Global heat pool; capacity, dissipation, environment-linked interface. | Simple stats summing; no heat pool simulation. | **Gap: Needs heat pool balance calculations.** |
-| **Frame / Integrity** | Frame vs. Weight determines structural integrity. | Stats summed; no integrity ratio displayed. | **Gap: Needs structural integrity ratio display.** |
-| **Thruster Boost** | Boost values are added to normal values. | Standard stats summed; no separate Boost mode calculation. | **Gap: Needs Boost toggle and additive math.** |
-| **Block Shapes** | Cosmetic; bounds and stats remain full. | Visual meshes change; bounds are rotated via Euler math. | **Gap: Align collision bounds for shape variants.** |

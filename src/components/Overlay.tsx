@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useShipStore, selectBOM, selectDerivedStats } from '../store/shipStore';
 import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER, HULL_SHAPES } from '../config/blocks';
 import { serializeBlocks } from '../utils/serialization';
-import { CategoryIcon, GripIcon, StatIcon } from './Icon';
+import { CategoryIcon, GripIcon, StatIcon, RotateIcon, FlipIcon } from './Icon';
 import { Shape3DPreview } from './Shape3DPreview';
 
 const formatStatKey = (key: string): string => {
@@ -485,6 +485,8 @@ export function Overlay() {
   const selectedBlockDef = selectedBlock ? BLOCK_DEFINITIONS[selectedBlock.type] : null;
   const isSelectedHull = selectedBlockDef && (selectedBlockDef.group === 'Steel' || selectedBlockDef.group === 'Titanium');
   const selectedBlockColor = selectedBlock?.color || selectedBlockDef?.color || '#909090';
+  const allowedRotations = selectedBlockDef?.allowedRotations || [];
+  const allowedFlips = selectedBlockDef?.allowedFlips || [];
 
   const handleSaveCurrentShip = () => {
     if (shipNameInput.trim()) {
@@ -1439,17 +1441,20 @@ export function Overlay() {
                   </div>
                 </div>
 
-                {BLOCK_DEFINITIONS[selectedBlock.type]?.group === 'Thrusters' && (
+                {allowedRotations.length > 0 && (
                   <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
                     <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Orientation</span>
                     <div className="grid grid-cols-1 gap-1.5">
-                      <button
-                        onClick={() => rotateBlock(selectedBlock.id, 'x')}
-                        className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center"
-                        title="Flip X (X Key)"
-                      >
-                        Flip X
-                      </button>
+                      {allowedRotations.includes('x') && (
+                        <button
+                          onClick={() => rotateBlock(selectedBlock.id, 'x')}
+                          className="py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer flex items-center justify-center gap-1.5"
+                          title="Rotate X (X Key)"
+                        >
+                          <RotateIcon className="w-3.5 h-3.5" />
+                          <span className="font-mono font-bold text-[10px]">X</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1497,43 +1502,52 @@ export function Overlay() {
                   </div>
                 )}
 
-                {isSelectedHull && (
+                {allowedFlips.length > 0 && (
                   <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
                     <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Flip Block</span>
                     <div className="grid grid-cols-3 gap-1.5">
-                      <button
-                        onClick={() => flipBlock(selectedBlock.id, 'x')}
-                        className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center border transition-all duration-205 ${
-                          selectedBlock.flipX
-                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
-                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
-                        }`}
-                        title="Flip X (X Key)"
-                      >
-                        Flip X
-                      </button>
-                      <button
-                        onClick={() => flipBlock(selectedBlock.id, 'y')}
-                        className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center border transition-all duration-205 ${
-                          selectedBlock.flipY
-                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
-                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
-                        }`}
-                        title="Flip Y (Y Key)"
-                      >
-                        Flip Y
-                      </button>
-                      <button
-                        onClick={() => flipBlock(selectedBlock.id, 'z')}
-                        className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer text-center border transition-all duration-205 ${
-                          selectedBlock.flipZ
-                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
-                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
-                        }`}
-                        title="Flip Z (Z Key)"
-                      >
-                        Flip Z
-                      </button>
+                      {allowedFlips.includes('x') && (
+                        <button
+                          onClick={() => flipBlock(selectedBlock.id, 'x')}
+                          className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer border transition-all duration-205 flex items-center justify-center gap-1.5 ${
+                            selectedBlock.flipX
+                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
+                              : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
+                          }`}
+                          title="Flip X (X Key)"
+                        >
+                          <FlipIcon className="w-3.5 h-3.5" />
+                          <span className="font-mono font-bold text-[10px]">X</span>
+                        </button>
+                      )}
+                      {allowedFlips.includes('y') && (
+                        <button
+                          onClick={() => flipBlock(selectedBlock.id, 'y')}
+                          className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer border transition-all duration-205 flex items-center justify-center gap-1.5 ${
+                            selectedBlock.flipY
+                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
+                              : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
+                          }`}
+                          title="Flip Y (Y Key)"
+                        >
+                          <FlipIcon className="w-3.5 h-3.5 rotate-90" />
+                          <span className="font-mono font-bold text-[10px]">Y</span>
+                        </button>
+                      )}
+                      {allowedFlips.includes('z') && (
+                        <button
+                          onClick={() => flipBlock(selectedBlock.id, 'z')}
+                          className={`py-1.5 rounded-lg text-xs font-semibold hover:scale-102 cursor-pointer border transition-all duration-205 flex items-center justify-center gap-1.5 ${
+                            selectedBlock.flipZ
+                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 hover:bg-blue-500/30'
+                              : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
+                          }`}
+                          title="Flip Z (Z Key)"
+                        >
+                          <FlipIcon className="w-3.5 h-3.5 rotate-45" />
+                          <span className="font-mono font-bold text-[10px]">Z</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
