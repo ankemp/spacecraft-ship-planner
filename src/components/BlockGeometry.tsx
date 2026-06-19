@@ -48,13 +48,14 @@ function getSlopeGeometry(w: number, h: number, d: number): THREE.BufferGeometry
 }
 
 function getSlopeFlatGeometry(w: number, h: number, d: number): THREE.BufferGeometry {
+  const transitionX = Math.min(w, 1);
   const vertices = [
     [0, 0, 0],         // v0 (bottom-left-front)
     [w, 0, 0],         // v1 (bottom-right-front)
     [0, 0, d],         // v2 (bottom-left-back)
     [w, 0, d],         // v3 (bottom-right-back)
-    [w - 1, h, 0],     // v4 (slope-top-front transition)
-    [w - 1, h, d],     // v5 (slope-top-back transition)
+    [transitionX, h, 0],     // v4 (slope-top-front transition)
+    [transitionX, h, d],     // v5 (slope-top-back transition)
     [w, h, 0],         // v6 (top-right-front)
     [w, h, d],         // v7 (top-right-back)
   ];
