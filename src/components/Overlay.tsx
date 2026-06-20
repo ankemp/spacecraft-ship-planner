@@ -4,6 +4,8 @@ import { BLOCK_DEFINITIONS, STAT_METADATA, BLOCK_GROUP_ORDER, HULL_SHAPES } from
 import { serializeBlocks } from '../utils/serialization';
 import { CategoryIcon, GripIcon, StatIcon, RotateIcon, FlipIcon, PotatoIcon } from './Icon';
 import { Shape3DPreview } from './Shape3DPreview';
+import type { ActiveShapeId } from '../utils/geometry';
+
 
 const formatStatKey = (key: string): string => {
   return key
@@ -640,7 +642,7 @@ export function Overlay() {
               >
                 <div className="w-11 h-11 rounded-lg bg-black/40 border border-white/10 flex-shrink-0 flex items-center justify-center overflow-hidden">
                   <Shape3DPreview
-                    shapeId={def.group === 'Steel' || def.group === 'Titanium' ? activeShape : 'full'}
+                    shapeId={(def.group === 'Steel' || def.group === 'Titanium' ? activeShape : 'full') as ActiveShapeId}
                     color={def.color}
                     disableRotation={true}
                     disableLive3D={true}
@@ -1322,11 +1324,11 @@ export function Overlay() {
             <div className="flex justify-between items-center border-b border-white/10 pb-2 flex-shrink-0">
               <div className="flex flex-col min-w-0 flex-1 select-none">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-blue-400">
-                    BLOCK INSPECTOR
-                  </span>
-                    <span className="text-sm font-bold text-white truncate w-full">
-                      {BLOCK_DEFINITIONS[selectedBlock.type]?.name || selectedBlock.type}
-                    </span>
+                  BLOCK INSPECTOR
+                </span>
+                <span className="text-sm font-bold text-white truncate w-full">
+                  {BLOCK_DEFINITIONS[selectedBlock.type]?.name || selectedBlock.type}
+                </span>
               </div>
 
               <button

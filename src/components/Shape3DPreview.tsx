@@ -2,12 +2,12 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Edges } from '@react-three/drei';
 import { BlockGeometry } from './BlockGeometry';
-import { getBufferGeometry } from '../utils/geometry';
+import { getBufferGeometry, getShapeSvgPath, type ActiveShapeId } from '../utils/geometry';
 import { useShipStore } from '../store/shipStore';
 import * as THREE from 'three';
 
 interface Shape3DPreviewProps {
-  shapeId: string;
+  shapeId: ActiveShapeId;
   color?: string;
   className?: string;
   isHovered?: boolean;
@@ -31,7 +31,7 @@ function PreviewMesh({
   disableRotation = false,
   dimensions = [4, 2, 3]
 }: {
-  shapeId: string;
+  shapeId: ActiveShapeId;
   color: string;
   isHovered: boolean;
   anyHovered?: boolean;
@@ -112,13 +112,8 @@ function PreviewMesh({
   );
 }
 
-export function Shape2DPreview({ shapeId, color, className }: { shapeId: string; color: string; className?: string }) {
-  const path =
-    shapeId === 'slope'
-      ? 'M 6,26 L 26,26 L 26,6 Z'
-      : shapeId === 'slope_flat'
-      ? 'M 6,26 L 26,26 L 26,6 L 16,6 Z'
-      : 'M 6,26 L 26,26 L 26,6 L 6,6 Z';
+export function Shape2DPreview({ shapeId, color, className }: { shapeId: ActiveShapeId; color: string; className?: string }) {
+  const path = getShapeSvgPath(shapeId);
 
   return (
     <div className={`${className} flex items-center justify-center p-0.5`}>
@@ -215,7 +210,7 @@ function getOffscreenRenderer() {
 const previewImageCache = new Map<string, string[]>();
 
 function getPreviewFrames(
-  shapeId: string,
+  shapeId: ActiveShapeId,
   color: string,
   dimensions?: [number, number, number],
   disableRotation = false

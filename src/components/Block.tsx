@@ -3,6 +3,8 @@ import { Edges, Text } from '@react-three/drei';
 import { BLOCK_DEFINITIONS } from '../config/blocks';
 import { useShipStore } from '../store/shipStore';
 import { BlockGeometry } from './BlockGeometry';
+import { getTopSurfaceAt, type ActiveShapeId } from '../utils/geometry';
+
 import type { ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -61,41 +63,27 @@ export const Block = memo(function Block({ id, type, position, rotation, color, 
   const fX = !!flipX;
   const fY = !!flipY;
 
-  // Helper to evaluate top surface Y and Z-tilt at any local X coordinate
-  const getTopSurfaceAt = (x: number) => {
-    const xEval = fX ? (w - x) : x;
-    let y = h;
-    let tilt = 0;
-
-    if (shape === 'slope') {
-      y = h * (xEval / w);
-      tilt = Math.atan2(h, w);
-    } else if (shape === 'slope_flat') {
-      const run = Math.min(w, 1);
-      if (xEval < run) {
-        y = h * (xEval / run);
-        tilt = Math.atan2(h, run);
-      } else {
-        y = h;
-        tilt = 0;
-      }
-    }
-
-    if (fX) tilt = -tilt;
-    return { y, tilt };
-  };
-
-  // Center X coordinate of the block
+  // Center X and Z coordinates of the block
   const centerX = w / 2;
-  const { y: topYRaw, tilt: topTiltRaw } = getTopSurfaceAt(centerX);
+  const centerZ = d / 2;
+  const { y: topYRaw, tilt: topTiltRaw } = getTopSurfaceAt((shape || 'full') as ActiveShapeId, centerX, w, h, fX);
 
   // Top face position & rotation (adjusts for vertical flips)
-  const topGroupPos: [number, number, number] = [centerX, fY ? h - topYRaw : topYRaw, d / 2];
+  const topGroupPos: [number, number, number] = [centerX, fY ? h - topYRaw : topYRaw, centerZ];
   const topGroupRot: [number, number, number] = [0, 0, fY ? -topTiltRaw : topTiltRaw];
 
   // Bottom face position & rotation (adjusts for vertical flips)
-  const bottomGroupPos: [number, number, number] = [centerX, fY ? h : 0, d / 2];
+  const bottomGroupPos: [number, number, number] = [centerX, fY ? h : 0, centerZ];
   const bottomGroupRot: [number, number, number] = [0, 0, 0];
+
+  // Front face Y position (matches visual geometry at the front edge)
+  const frontX = fX ? w : 0;
+  const { y: frontYRaw } = getTopSurfaceAt((shape || 'full') as ActiveShapeId, frontX, w, h, fX);
+  const frontY = fY ? h - frontYRaw / 2 : frontYRaw / 2;
+
+  // Front face position & rotation (adjusts for flips)
+  const frontGroupPos: [number, number, number] = [fX ? w + 0.005 : -0.005, frontY, centerZ];
+  const frontGroupRot: [number, number, number] = [0, fX ? Math.PI / 2 : -Math.PI / 2, fY ? Math.PI : 0];
 
   return (
     <group position={position} rotation={rotation}>
@@ -205,6 +193,21 @@ export const Block = memo(function Block({ id, type, position, rotation, color, 
               material-polygonOffsetFactor={-1}
             >
               Bottom
+            </Text>
+          </group>
+          <group position={frontGroupPos} rotation={frontGroupRot}>
+            <Text
+              position={[0, 0, 0]}
+              fontSize={Math.min(d, h) * 0.25}
+              color="#ffaa00"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(d, h) * 0.025}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              Front
             </Text>
           </group>
         </>
