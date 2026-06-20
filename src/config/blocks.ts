@@ -33,6 +33,16 @@ export const HULL_SHAPES = [
   { id: 'full', name: 'Full Block' },
   { id: 'slope', name: 'Slope' },
   { id: 'slope_flat', name: 'Slope Flat' },
+  // { id: 'beveled_edge', name: 'Beveled Edge' },
+  // { id: 'double_beveled_edge', name: 'Double Beveled Edge' },
+  // { id: 'beveled_corner', name: 'Beveled Corner' },
+  { id: 'wedge', name: 'Wedge' },
+  { id: 'wedge_flat', name: 'Wedge Flat' },
+  { id: 'rounded_edge', name: 'Rounded Edge' },
+  // { id: 'curved_corner', name: 'Curved Corner' },
+  { id: 'rounded_edge_vertical', name: 'Rounded Edge Vertical' },
+  { id: 'double_rounded_edge', name: 'Double Rounded Edge' },
+  { id: 'curved_slope', name: 'Curved Slope' },
 ] as const;
 
 
