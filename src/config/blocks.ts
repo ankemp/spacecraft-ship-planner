@@ -197,7 +197,8 @@ export const BLOCK_GROUP_ORDER: string[] = [
   'Steel',
   'Titanium',
   'Cockpits',
-  'Thrusters'
+  'Thrusters',
+  'Wings & Spoilers'
 ];
 
 export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
@@ -535,5 +536,65 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinition> = {
     tags: ['Size Incorrect'],
     allowedFlips: [],
     allowedRotations: []
-  }
+  },
+  nimbus_spoiler: {
+    type: 'nimbus_spoiler',
+    name: 'Nimbus Spoiler',
+    dimensions: [3, 1, 5],
+    costs: { smallTitaniumParts: 1, supportHardware: 1 },
+    color: '#06b6d4',
+    group: 'Wings & Spoilers',
+    stats: {
+      systemSupport: 19,
+      frame: 8,
+      weight: 4.0,
+      hull: 1,
+      steeringStrength: 2.0,
+      heatCapacity: 5,
+      materialHeatConductivity: 60.0
+    },
+    allowedFlips: ['x', 'y', 'z'],
+    tags: ['Size Incorrect'],
+    allowedRotations: []
+  },
+  catfin_spoiler: {
+    type: 'catfin_spoiler',
+    name: 'Catfin Spoiler',
+    dimensions: [3, 1, 4],
+    costs: { smallTitaniumParts: 1, supportHardware: 1 },
+    color: '#06b6d4',
+    group: 'Wings & Spoilers',
+    stats: {
+      systemSupport: 19,
+      frame: 8,
+      weight: 4.0,
+      hull: 1,
+      steeringStrength: 2.0,
+      heatCapacity: 5,
+      materialHeatConductivity: 60.0
+    },
+    tags: ['Size Incorrect'],
+    allowedFlips: ['x', 'y', 'z'],
+    allowedRotations: []
+  },
+    warden_wing: {
+    type: 'warden_wing',
+    name: 'Warden Wing',
+    dimensions: [4, 4, 4],
+    costs: { smallTitaniumParts: 1, supportHardware: 1 },
+    color: '#06b6d4',
+    group: 'Wings & Spoilers',
+    stats: {
+      systemSupport: 38,
+      frame: 16,
+      weight:8.0,
+      hull: 3,
+      steeringStrength: 4.0,
+      heatCapacity: 10,
+      materialHeatConductivity: 60.0
+    },
+    allowedFlips: ['x', 'y', 'z'],
+    tags: ['Size Incorrect'],
+    allowedRotations: []
+  },
 };
