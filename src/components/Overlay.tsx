@@ -6,6 +6,8 @@ import { CategoryIcon, GripIcon, StatIcon, RotateIcon, FlipIcon, PotatoIcon } fr
 import { Shape3DPreview } from './Shape3DPreview';
 import type { ActiveShapeId } from '../utils/geometry';
 
+const enabledShapesCount = HULL_SHAPES.filter(shape => !('disabled' in shape && shape.disabled)).length;
+
 
 const formatStatKey = (key: string): string => {
   return key
@@ -577,11 +579,12 @@ export function Overlay() {
         </div>
 
         {/* Shape Selector (Only for Steel/Titanium if multiple shapes exist) */}
-        {(currentCategory === 'Steel' || currentCategory === 'Titanium') && HULL_SHAPES.length > 1 && (
+        {(currentCategory === 'Steel' || currentCategory === 'Titanium') && enabledShapesCount > 1 && (
           <div className="flex flex-col gap-2 border-b border-white/10 pb-3.5 flex-shrink-0">
             <span className="text-[10px] uppercase font-bold tracking-wider text-white/40">Select Hull Shape</span>
             <div className="grid grid-cols-5 gap-1.5">
               {HULL_SHAPES.map(shape => {
+                if ('disabled' in shape && shape.disabled) return null;
                 const isActive = activeShape === shape.id;
                 return (
                   <button
@@ -1440,11 +1443,12 @@ export function Overlay() {
                 )}
 
                 {/* Block Shape Selection (Only for Steel/Titanium if multiple shapes exist) */}
-                {isSelectedHull && HULL_SHAPES.length > 1 && (
+                {isSelectedHull && enabledShapesCount > 1 && (
                   <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-white/5">
                     <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Modify Shape</span>
                     <div className="grid grid-cols-5 gap-1.5">
                       {HULL_SHAPES.map(shape => {
+                        if ('disabled' in shape && shape.disabled) return null;
                         const isActive = (selectedBlock.shape || 'full') === shape.id;
                         return (
                           <button
