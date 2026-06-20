@@ -135,6 +135,16 @@ export const CategoryIcon = ({ group }: { group: string }) => {
                     <path d="M9 19c-1 2-3 2-3 2h12s-2 0-3-2M12 19v3" />
                 </svg>
             );
+        case 'wings & spoilers':
+            return (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+                    {/* Sleek swept wings */}
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5L3 11h7l2 6 2-6h7L12 5z" />
+                    {/* Spoiler element at the back */}
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18h12" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 16v3M18 16v3" />
+                </svg>
+            );
         default:
             return (
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
