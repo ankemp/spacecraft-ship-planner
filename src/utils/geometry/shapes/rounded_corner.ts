@@ -6,11 +6,8 @@ export const rounded_corner: ShapeConfig = {
   name: 'Rounded Corner',
   svgPath: 'M 11,6 L 26,6 L 26,21 Q 26,26 21,26 L 11,26 Z',
   generateGeometry(w: number, h: number, d: number) {
-    const sx = w / 3.0;
     const sy = h / 3.0;
     const sz = d / 3.0;
-
-    const rx = 0.5 * sx;
     const rz = 0.5 * sz;
     const ry = 1.0 * sy;
 
@@ -23,8 +20,8 @@ export const rounded_corner: ShapeConfig = {
     const S = 8;
     const capIdx: number[][] = Array.from({ length: S + 1 }, () => []);
 
-    // Apex at y = h
-    const apex = addVertex(rx, h, rz);
+    // Apex at y = h, x = rz, z = rz (uniform radius for symmetric leading edge)
+    const apex = addVertex(rz, h, rz);
 
     // Create Cap Grid
     for (let i = 0; i <= S; i++) {
@@ -35,7 +32,7 @@ export const rounded_corner: ShapeConfig = {
           continue;
         }
         const v = (j / S) * (Math.PI / 2);
-        const vx = rx - rx * Math.cos(u) * Math.cos(v);
+        const vx = rz - rz * Math.cos(u) * Math.cos(v);
         const vz = rz - rz * Math.sin(u) * Math.cos(v);
         const vy = 2.0 * sy + ry * Math.sin(v);
         capIdx[i][j] = addVertex(vx, vy, vz);
@@ -46,7 +43,7 @@ export const rounded_corner: ShapeConfig = {
     const baseCap: number[] = [];
     for (let i = 0; i <= S; i++) {
       const u = (i / S) * (Math.PI / 2);
-      baseCap.push(addVertex(rx - rx * Math.cos(u), 0, rz - rz * Math.sin(u)));
+      baseCap.push(addVertex(rz - rz * Math.cos(u), 0, rz - rz * Math.sin(u)));
     }
 
     // Other Base vertices
@@ -58,13 +55,6 @@ export const rounded_corner: ShapeConfig = {
     const lipFR = addVertex(w, 2.0 * sy, 0);
     const lipBR = addVertex(w, 2.0 * sy, d);
     const lipBL = addVertex(0, 2.0 * sy, d);
-    const lipL0 = addVertex(0, 2.0 * sy, rz);
-
-    // Top Deck Vertices at y = h
-    const T0 = addVertex(0, h, rz);
-    const T1 = addVertex(0, h, d);
-    const T2 = addVertex(w, h, d);
-    const T3 = addVertex(w, h, rz);
 
     // Front Slope Profile at x = w
     const frontSlopeR: number[] = [];
@@ -74,7 +64,7 @@ export const rounded_corner: ShapeConfig = {
         continue;
       }
       if (j === S) {
-        frontSlopeR.push(T3);
+        frontSlopeR.push(addVertex(w, h, rz));
         continue;
       }
       const v = (j / S) * (Math.PI / 2);
@@ -82,6 +72,29 @@ export const rounded_corner: ShapeConfig = {
       const vz = rz * (1 - Math.cos(v));
       frontSlopeR.push(addVertex(w, vy, vz));
     }
+
+    // Left Slope Profile at z = d (facing back)
+    const leftSlopeBack: number[] = [];
+    for (let j = 0; j <= S; j++) {
+      if (j === 0) {
+        leftSlopeBack.push(lipBL);
+        continue;
+      }
+      if (j === S) {
+        leftSlopeBack.push(addVertex(rz, h, d));
+        continue;
+      }
+      const v = (j / S) * (Math.PI / 2);
+      const vy = 2.0 * sy + ry * Math.sin(v);
+      const vx = rz * (1 - Math.cos(v));
+      leftSlopeBack.push(addVertex(vx, vy, d));
+    }
+
+    // Top Deck Vertices at y = h
+    const T0 = apex;             // (rz, h, rz)
+    const T1 = leftSlopeBack[S]; // (rz, h, d)
+    const T2 = addVertex(w, h, d);
+    const T3 = frontSlopeR[S];   // (w, h, rz)
 
     const indices: number[] = [];
 
@@ -126,16 +139,25 @@ export const rounded_corner: ShapeConfig = {
     indices.push(baseBR, lipBL, lipBR);
 
     // 6. Left Lip
-    indices.push(baseBL, baseCap[0], lipL0);
-    indices.push(baseBL, lipL0, lipBL);
+    indices.push(baseBL, baseCap[0], capIdx[0][0]);
+    indices.push(baseBL, capIdx[0][0], lipBL);
 
-    // 7. Left Wall above lip
-    indices.push(lipL0, T1, T0);
-    indices.push(lipL0, lipBL, T1);
+    // 7. Left Wall above lip (Curved slope)
+    for (let j = 0; j < S; j++) {
+      const tA = capIdx[0][j];
+      const tB = capIdx[0][j + 1];
+      const bA = leftSlopeBack[j];
+      const bB = leftSlopeBack[j + 1];
 
-    // 8. Back Wall above lip
-    indices.push(lipBL, T2, T1);
-    indices.push(lipBL, lipBR, T2);
+      indices.push(tA, bA, bB);
+      indices.push(tA, bB, tB);
+    }
+
+    // 8. Back Wall above lip (Fanned from lipBR to leftSlopeBack curve)
+    for (let j = 0; j < S; j++) {
+      indices.push(lipBR, leftSlopeBack[j + 1], leftSlopeBack[j]);
+    }
+    indices.push(lipBR, T2, T1);
 
     // 9. Right Wall above lip (Fanned to front slope curve)
     for (let j = 0; j < S; j++) {
@@ -143,12 +165,7 @@ export const rounded_corner: ShapeConfig = {
     }
     indices.push(lipBR, T3, T2);
 
-    // 10. Left transition curve gap filler (at z = rz)
-    for (let j = 0; j < S; j++) {
-      indices.push(T0, capIdx[0][j + 1], capIdx[0][j]);
-    }
-
-    // 11. Front Slope
+    // 10. Front Slope
     for (let j = 0; j < S; j++) {
       const tA = capIdx[S][j];
       const tB = capIdx[S][j + 1];
@@ -159,7 +176,7 @@ export const rounded_corner: ShapeConfig = {
       indices.push(tA, tB, rB);
     }
 
-    // 12. Base Face (facing -Y)
+    // 11. Base Face (facing -Y)
     const baseVerts = [
       baseCap[0],
       ...baseCap.slice(1),
@@ -172,7 +189,7 @@ export const rounded_corner: ShapeConfig = {
       indices.push(baseVerts[0], baseVerts[k + 1], baseVerts[k]);
     }
 
-    // 13. Top Deck (facing +Y)
+    // 12. Top Deck (facing +Y)
     indices.push(T0, T3, T2);
     indices.push(T0, T2, T1);
 

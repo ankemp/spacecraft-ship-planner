@@ -41,7 +41,7 @@ export const HULL_SHAPES: BlockShapeDefinition[] = [
   { id: 'wedge', name: 'Wedge' },
   { id: 'wedge_flat', name: 'Wedge Flat' },
   { id: 'rounded_slope', name: 'Rounded Slope' },
-  { id: 'rounded_corner', name: 'Rounded Corner', disabled: true },
+  { id: 'rounded_corner', name: 'Rounded Corner' },
   { id: 'rounded_edge_vertical', name: 'Rounded Edge Vertical' },
   { id: 'rounded_edge', name: 'Rounded Edge' },
   { id: 'double_rounded_edge', name: 'Double Rounded Edge' },
