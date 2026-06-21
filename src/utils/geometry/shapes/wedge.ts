@@ -6,12 +6,10 @@ export const wedge: ShapeConfig = {
   name: 'Wedge',
   svgPath: 'M 11,6 L 26,6 L 26,25 Z',
   generateGeometry(w: number, h: number, d: number) {
-    const sx = w / 4.0;
-    const sz = d / 3.0;
 
     const profile = [
-      [0.8 * sx, d],
-      [w, 0.2 * sz],
+      [0, d],
+      [w, 0],
       [w, d],
     ];
 

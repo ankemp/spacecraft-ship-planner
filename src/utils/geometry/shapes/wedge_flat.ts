@@ -4,15 +4,15 @@ import type { ShapeConfig } from '../types';
 export const wedge_flat: ShapeConfig = {
   id: 'wedge_flat',
   name: 'Wedge Flat',
-  svgPath: 'M 11,6 L 26,6 L 26,25 L 11,18 Z',
+  svgPath: 'M 11,6 L 26,6 L 26,25 L 20,25 L 11,13 Z',
   generateGeometry(w: number, h: number, d: number) {
-    const sx = w / 4.0;
-    const sz = d / 3.0;
+
+    const transitionX = Math.max(0, w - 3);
 
     const profile = [
-      [0.8 * sx, d],
-      [0.8 * sx, 1.2 * sz],
-      [w, 0.2 * sz],
+      [0, d],
+      [transitionX, 0],
+      [w, 0],
       [w, d],
     ];
 
