@@ -31,6 +31,8 @@ export function Overlay() {
   const dismissPotatoSuggestion = useShipStore(s => s.dismissPotatoSuggestion);
   const background = useShipStore(s => s.background);
   const setBackground = useShipStore(s => s.setBackground);
+  const showDebugXYZ = useShipStore(s => s.showDebugXYZ);
+  const setShowDebugXYZ = useShipStore(s => s.setShowDebugXYZ);
 
   // Memoize expensive derived computations so they only re-run when blocks
   // actually change, not on every Overlay re-render (activeTool, panel states,
@@ -2058,6 +2060,34 @@ export function Overlay() {
             title={potatoMode ? "Disable Potato Mode (High Quality)" : "Enable Potato Mode (Low Spec)"}
           >
             <PotatoIcon />
+          </button>
+
+          {/* Debug w,h,d Toggle */}
+          <button
+            onClick={() => {
+              setShowDebugXYZ(!showDebugXYZ);
+            }}
+            className={`p-2 rounded-full transition-all duration-300 cursor-pointer border ${showDebugXYZ
+              ? 'bg-rose-500/20 text-rose-400 border-rose-400/30'
+              : 'hover:bg-white/5 text-white/60 hover:text-white border-transparent'
+              }`}
+            title={showDebugXYZ ? "Hide w,h,d Debug Labels" : "Show w,h,d Debug Labels"}
+          >
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {/* Y Axis (h) (Up - Green) */}
+              <path d="M12 12V4.5m0 0L9.5 7M12 4.5L14.5 7" stroke={showDebugXYZ ? "#22c55e" : "currentColor"} />
+              {/* X Axis (w) (Down-Right - Red) */}
+              <path d="M12 12l6.5 4m0 0l-3.5.5m3.5-.5l-.5-3.5" stroke={showDebugXYZ ? "#ef4444" : "currentColor"} />
+              {/* Z Axis (d) (Down-Left - Blue) */}
+              <path d="M12 12l-6.5 4m0 0l.5-3.5m-.5 3.5l3.5-.5" stroke={showDebugXYZ ? "#3b82f6" : "currentColor"} />
+            </svg>
           </button>
 
         </div>

@@ -31,6 +31,7 @@ export const Block = memo(function Block({ id, type, position, rotation, color, 
   const removeBlock = useShipStore(s => s.removeBlock);
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
+  const showDebugXYZ = useShipStore(s => s.showDebugXYZ);
 
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -208,6 +209,100 @@ export const Block = memo(function Block({ id, type, position, rotation, color, 
               material-polygonOffsetFactor={-1}
             >
               Front
+            </Text>
+          </group>
+        </>
+      )}
+ 
+      {showDebugXYZ && !isSelected && (
+        <>
+          {/* X Labels on local X-faces */}
+          <group position={[w + 0.005, h / 2, d / 2]} rotation={[0, Math.PI / 2, 0]}>
+            <Text
+              fontSize={Math.min(h, d) * 0.35}
+              color="#ff3333"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(h, d) * 0.035}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              w
+            </Text>
+          </group>
+          <group position={[-0.005, h / 2, d / 2]} rotation={[0, -Math.PI / 2, 0]}>
+            <Text
+              fontSize={Math.min(h, d) * 0.35}
+              color="#ff3333"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(h, d) * 0.035}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              0
+            </Text>
+          </group>
+
+          {/* Y Labels on local Y-faces */}
+          <group position={[w / 2, h + 0.005, d / 2]} rotation={[-Math.PI / 2, 0, 0]}>
+            <Text
+              fontSize={Math.min(w, d) * 0.35}
+              color="#33cc33"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(w, d) * 0.035}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              h
+            </Text>
+          </group>
+          <group position={[w / 2, -0.005, d / 2]} rotation={[Math.PI / 2, 0, 0]}>
+            <Text
+              fontSize={Math.min(w, d) * 0.35}
+              color="#33cc33"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(w, d) * 0.035}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              0
+            </Text>
+          </group>
+
+          {/* Z Labels on local Z-faces */}
+          <group position={[w / 2, h / 2, d + 0.005]} rotation={[0, 0, 0]}>
+            <Text
+              fontSize={Math.min(w, h) * 0.35}
+              color="#3399ff"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(w, h) * 0.035}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              d
+            </Text>
+          </group>
+          <group position={[w / 2, h / 2, -0.005]} rotation={[0, Math.PI, 0]}>
+            <Text
+              fontSize={Math.min(w, h) * 0.35}
+              color="#3399ff"
+              anchorX="center"
+              anchorY="middle"
+              outlineColor="#000000"
+              outlineWidth={Math.min(w, h) * 0.035}
+              material-polygonOffset={true}
+              material-polygonOffsetFactor={-1}
+            >
+              0
             </Text>
           </group>
         </>

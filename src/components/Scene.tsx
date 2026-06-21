@@ -24,8 +24,9 @@ function Invalidator() {
   const activeTool = useShipStore(s => s.activeTool);
   const potatoMode = useShipStore(s => s.potatoMode);
   const background = useShipStore(s => s.background);
+  const showDebugXYZ = useShipStore(s => s.showDebugXYZ);
 
-  useEffect(() => { invalidate(); }, [blocks, movingBlock, selectedBlockId, activeTool, potatoMode, background, invalidate]);
+  useEffect(() => { invalidate(); }, [blocks, movingBlock, selectedBlockId, activeTool, potatoMode, background, showDebugXYZ, invalidate]);
 
   return null;
 }
