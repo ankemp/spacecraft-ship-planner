@@ -7,14 +7,14 @@ export const double_beveled_edge: ShapeConfig = {
   svgPath: 'M 6,26 L 6,22 L 11,6 L 21,6 L 26,22 L 26,26 Z',
   generateGeometry(w: number, h: number, d: number) {
     const sz = d / 3.0;
-    const sy = h;
+    const sy = h / 3.0;
     const profile = [
       [0, 0],
       [3.0 * sz, 0],
-      [3.0 * sz, 0.2 * sy],
-      [2.2 * sz, h],
-      [0.8 * sz, h],
-      [0, 0.2 * sy],
+      [3.0 * sz, 2.0 * sy],
+      [2.5 * sz, h],
+      [0.5 * sz, h],
+      [0, 2.0 * sy],
     ];
 
     const N = profile.length;
