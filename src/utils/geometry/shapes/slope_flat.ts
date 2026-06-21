@@ -6,7 +6,7 @@ export const slope_flat: ShapeConfig = {
   name: 'Slope Flat',
   svgPath: 'M 6,26 L 26,26 L 26,6 L 16,6 Z',
   generateGeometry(w: number, h: number, d: number) {
-    const transitionX = Math.min(w, 1);
+    const transitionX = Math.min(w, 2);
     const vertices = [
       [0, 0, 0],         // v0 (bottom-left-front)
       [w, 0, 0],         // v1 (bottom-right-front)
@@ -41,7 +41,7 @@ export const slope_flat: ShapeConfig = {
     return geom;
   },
   getTopSurfaceAt: (x, w, h) => {
-    const run = Math.min(w, 1);
+    const run = Math.min(w, 2);
     if (x < run) {
       return { y: h * (x / run), tilt: Math.atan2(h, run) };
     }
