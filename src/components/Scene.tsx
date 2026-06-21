@@ -274,6 +274,7 @@ export function Scene() {
   const selectedBlockId = useShipStore(s => s.selectedBlockId);
   const setSelectedBlockId = useShipStore(s => s.setSelectedBlockId);
   const movingBlock = useShipStore(s => s.movingBlock);
+  const startMoveBlock = useShipStore(s => s.startMoveBlock);
 
   const addBlock = useShipStore(s => s.addBlock);
   const checkCollision = useShipStore(s => s.checkCollision);
@@ -293,6 +294,18 @@ export function Scene() {
   const [prevMovingBlockId, setPrevMovingBlockId] = useState<string | null>(null);
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
 
+  const [isDraggingBlock, setIsDraggingBlock] = useState(false);
+  const dragRef = useRef<{
+    blockId: string;
+    startX: number;
+    startY: number;
+    timeoutId: number | null;
+    isDragging: boolean;
+  } | null>(null);
+  const wasDraggingRef = useRef(false);
+  const hoverPosRef = useRef<[number, number, number] | null>(null);
+  const rotationRef = useRef<[number, number, number]>([0, 0, 0]);
+
   // Sync rotation and flip state when block is picked up
   if (movingBlock && movingBlock.id !== prevMovingBlockId) {
     setPrevMovingBlockId(movingBlock.id);
@@ -301,6 +314,21 @@ export function Scene() {
     setPrevMovingBlockId(null);
   }
 
+  // Sync dragging state if movingBlock is cleared externally (e.g. keybind cancel or delete)
+  useEffect(() => {
+    if (!movingBlock && isDraggingBlock) {
+      setTimeout(() => {
+        setIsDraggingBlock(false);
+      }, 0);
+      if (dragRef.current) {
+        if (dragRef.current.timeoutId) {
+          window.clearTimeout(dragRef.current.timeoutId);
+        }
+        dragRef.current = null;
+      }
+    }
+  }, [movingBlock, isDraggingBlock]);
+
   useEffect(() => {
     if (movingBlock) {
       setActiveFlipX(movingBlock.flipX || false);
@@ -308,6 +336,55 @@ export function Scene() {
       setActiveFlipZ(movingBlock.flipZ || false);
     }
   }, [movingBlock, setActiveFlipX, setActiveFlipY, setActiveFlipZ]);
+
+  useEffect(() => {
+    if (isDraggingBlock) {
+      document.body.style.cursor = 'grabbing';
+      return () => {
+        document.body.style.cursor = 'auto';
+      };
+    }
+  }, [isDraggingBlock]);
+
+  useEffect(() => {
+    const handleGlobalPointerUp = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+
+      if (dragRef.current) {
+        if (dragRef.current.timeoutId) {
+          window.clearTimeout(dragRef.current.timeoutId);
+        }
+
+        if (dragRef.current.isDragging) {
+          e.preventDefault();
+          const currentHoverPos = hoverPosRef.current;
+          const currentRotation = rotationRef.current;
+
+          if (currentHoverPos) {
+            const placed = placeMovingBlock(currentHoverPos, currentRotation);
+            if (!placed) {
+              cancelMoveBlock();
+            }
+          } else {
+            cancelMoveBlock();
+          }
+
+          setIsDraggingBlock(false);
+          wasDraggingRef.current = true;
+          setTimeout(() => {
+            wasDraggingRef.current = false;
+          }, 0);
+        }
+
+        dragRef.current = null;
+      }
+    };
+
+    window.addEventListener('pointerup', handleGlobalPointerUp, { capture: true });
+    return () => {
+      window.removeEventListener('pointerup', handleGlobalPointerUp, { capture: true });
+    };
+  }, [placeMovingBlock, cancelMoveBlock]);
 
   // Reset rotation and flip states when active tool changes to prevent stale states from leaking
   const [prevActiveTool, setPrevActiveTool] = useState(activeTool);
@@ -327,8 +404,21 @@ export function Scene() {
   const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
 
+    if (dragRef.current && !dragRef.current.isDragging) {
+      const dx = e.nativeEvent.clientX - dragRef.current.startX;
+      const dy = e.nativeEvent.clientY - dragRef.current.startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 5) {
+        if (dragRef.current.timeoutId) {
+          window.clearTimeout(dragRef.current.timeoutId);
+        }
+        dragRef.current = null;
+      }
+    }
+
     // If we are in select mode and not moving a block, we don't need grid position calculation or updates
-    if (activeTool === 'select' && !movingBlock) {
+    if (activeTool === 'select' && !movingBlock && !dragRef.current?.isDragging) {
       return;
     }
 
@@ -378,6 +468,40 @@ export function Scene() {
       x: e.nativeEvent.clientX,
       y: e.nativeEvent.clientY,
     };
+
+    if (e.button !== 0) return;
+
+    if (activeTool !== 'select' || movingBlock) {
+      return;
+    }
+
+    const clickedBlockId = e.object.userData?.blockId;
+    if (clickedBlockId) {
+      e.stopPropagation();
+
+      const startX = e.nativeEvent.clientX;
+      const startY = e.nativeEvent.clientY;
+
+      if (dragRef.current?.timeoutId) {
+        window.clearTimeout(dragRef.current.timeoutId);
+      }
+
+      const timeoutId = window.setTimeout(() => {
+        if (dragRef.current && !dragRef.current.isDragging) {
+          dragRef.current.isDragging = true;
+          setIsDraggingBlock(true);
+          startMoveBlock(clickedBlockId);
+        }
+      }, 250);
+
+      dragRef.current = {
+        blockId: clickedBlockId,
+        startX,
+        startY,
+        timeoutId,
+        isDragging: false,
+      };
+    }
   };
 
   const ghostType = movingBlock ? movingBlock.type : activeTool;
@@ -430,9 +554,18 @@ export function Scene() {
     }
   }
 
+  useEffect(() => {
+    hoverPosRef.current = hoverPos;
+    rotationRef.current = rotation;
+  });
+
   const onClick = (e: ThreeEvent<MouseEvent>) => {
     if (e.button === 2) return; // Handled by cancelMoveBlock or delete
     e.stopPropagation();
+
+    if (wasDraggingRef.current) {
+      return;
+    }
 
     if (pointerDownRef.current) {
       const dx = e.nativeEvent.clientX - pointerDownRef.current.x;
@@ -600,7 +733,7 @@ export function Scene() {
         cellThickness={1.0}
         sectionThickness={1.5}
       />
-      <OrbitControls makeDefault minDistance={30} maxDistance={160} />
+      <OrbitControls makeDefault minDistance={20} maxDistance={160} enabled={!isDraggingBlock} />
     </Canvas>
   );
 }
