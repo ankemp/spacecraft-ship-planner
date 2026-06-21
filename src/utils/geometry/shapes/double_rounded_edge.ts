@@ -7,32 +7,32 @@ export const double_rounded_edge: ShapeConfig = {
   svgPath: 'M 6,26 L 6,22 Q 6,6 11,6 L 21,6 Q 26,6 26,22 L 26,26 Z',
   generateGeometry(w: number, h: number, d: number) {
     const sz = d / 3.0;
-    const sy = h;
+    const sy = h / 3.0;
 
     const profile: number[][] = [];
     profile.push([0, 0]);
     profile.push([3.0 * sz, 0]);
-    profile.push([3.0 * sz, 0.2 * sy]);
+    profile.push([3.0 * sz, 2.0 * sy]);
 
     const steps = 12;
 
     // Right curve from theta = pi/2 down to 0
     for (let i = steps - 1; i >= 0; i--) {
       const theta = (i / (steps - 1)) * (Math.PI / 2);
-      const z = 2.2 * sz + 0.8 * sz * Math.sin(theta);
-      const y = 0.2 * sy + 0.8 * sy * Math.cos(theta);
-      if (i === steps - 1) continue; // Avoid duplicating [3.0 * sz, 0.2 * sy]
+      const z = 2.5 * sz + 0.5 * sz * Math.sin(theta);
+      const y = 2.0 * sy + 1.0 * sy * Math.cos(theta);
+      if (i === steps - 1) continue; // Avoid duplicating [3.0 * sz, 2.0 * sy]
       profile.push([z, y]);
     }
 
-    profile.push([0.8 * sz, 1.0 * sy]);
+    profile.push([0.5 * sz, h]);
 
     // Left curve from theta = pi/2 down to 0
     for (let i = steps - 1; i >= 0; i--) {
       const theta = (i / (steps - 1)) * (Math.PI / 2);
-      const z = 0.8 * sz * (1 - Math.cos(theta));
-      const y = 0.2 * sy + 0.8 * sy * Math.sin(theta);
-      if (i === steps - 1) continue; // Avoid duplicating [0.8 * sz, 1.0 * sy]
+      const z = 0.5 * sz * (1 - Math.cos(theta));
+      const y = 2.0 * sy + 1.0 * sy * Math.sin(theta);
+      if (i === steps - 1) continue; // Avoid duplicating [0.5 * sz, h]
       profile.push([z, y]);
     }
 

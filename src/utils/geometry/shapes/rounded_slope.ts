@@ -1,49 +1,49 @@
 import * as THREE from 'three';
 import type { ShapeConfig } from '../types';
 
-export const rounded_edge: ShapeConfig = {
-  id: 'rounded_edge',
-  name: 'Rounded Edge',
-  svgPath: 'M 6,26 L 6,22 Q 6,6 11,6 L 26,6 L 26,26 Z',
+export const rounded_slope: ShapeConfig = {
+  id: 'rounded_slope',
+  name: 'Rounded Slope',
+  svgPath: 'M 6,26 L 6,12.67 Q 6,6 12.67,6 L 26,6 L 26,26 Z',
   generateGeometry(w: number, h: number, d: number) {
-    const sz = d / 3.0;
+    const sx = w / 3.0;
     const sy = h / 3.0;
 
     const profile: number[][] = [];
     profile.push([0, 0]);
-    profile.push([3.0 * sz, 0]);
-    profile.push([3.0 * sz, h]);
-    profile.push([0.5 * sz, h]);
+    profile.push([w, 0]);
+    profile.push([w, h]);
+    profile.push([0.5 * sx, h]);
 
     const steps = 12;
     for (let i = steps - 1; i >= 0; i--) {
       const theta = (i / (steps - 1)) * (Math.PI / 2);
-      const z = 0.5 * sz * (1 - Math.cos(theta));
+      const x = 0.5 * sx * (1 - Math.cos(theta));
       const y = 2.0 * sy + 1.0 * sy * Math.sin(theta);
-      if (i === steps - 1) continue; // Avoid duplicating [0.5 * sz, h]
-      profile.push([z, y]);
+      if (i === steps - 1) continue; // Avoid duplicating [0.5 * sx, h]
+      profile.push([x, y]);
     }
 
     const N = profile.length;
     const vertices: number[][] = [];
 
-    // Left cap (x = 0)
+    // Back cap (z = 0)
     for (let i = 0; i < N; i++) {
-      vertices.push([0, profile[i][1], profile[i][0]]);
+      vertices.push([profile[i][0], profile[i][1], 0]);
     }
-    // Right cap (x = w)
+    // Front cap (z = d)
     for (let i = 0; i < N; i++) {
-      vertices.push([w, profile[i][1], profile[i][0]]);
+      vertices.push([profile[i][0], profile[i][1], d]);
     }
 
     const indices: number[] = [];
 
-    // Left cap triangulation (CCW facing -X)
+    // Back cap triangulation (CCW facing -Z)
     for (let i = 1; i < N - 1; i++) {
       indices.push(0, i, i + 1);
     }
 
-    // Right cap triangulation (CW facing +X)
+    // Front cap triangulation (CW facing +Z)
     for (let i = 1; i < N - 1; i++) {
       indices.push(N, i + 1 + N, i + N);
     }
@@ -64,5 +64,24 @@ export const rounded_edge: ShapeConfig = {
     geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geom.computeVertexNormals();
     return geom;
+  },
+  getTopSurfaceAt(x: number, w: number, h: number) {
+    const sx = w / 3.0;
+    const sy = h / 3.0;
+    const rx = 0.5 * sx;
+    const ry = 1.0 * sy;
+
+    if (x >= rx) {
+      return { y: h, tilt: 0 };
+    }
+
+    const u = Math.min(1, Math.max(0, 1 - x / rx));
+    const sin_theta = Math.sqrt(1 - u * u);
+    const cos_theta = u;
+
+    const y = 2.0 * sy + ry * sin_theta;
+    const tilt = Math.atan2(ry * cos_theta, rx * sin_theta);
+
+    return { y, tilt };
   },
 };

@@ -6,75 +6,175 @@ export const beveled_corner: ShapeConfig = {
   name: 'Beveled Corner',
   svgPath: 'M 11,6 L 26,6 L 26,22 L 11,26 Z',
   generateGeometry(w: number, h: number, d: number) {
+    const sx = w / 3.0;
+    const sy = h / 3.0;
     const sz = d / 3.0;
 
-    const vertices = [
-      // Left profile (x = 0) with all chamfers
-      [0, 0, 0.05 * d],           // v0
-      [0, 0, d - 0.05 * d],       // v1
-      [0, 0.05 * h, d],           // v2
-      [0, 0.9 * h, d],            // v3
-      [0, h, d - 0.1 * d],        // v4
-      [0, h, 0.85 * sz],          // v5
-      [0, 0.95 * h, 0.75 * sz],   // v6
-      [0, 0.22 * h, 0.05 * sz],   // v7
-      [0, 0.15 * h, 0],           // v8
-      [0, 0.05 * h, 0],           // v9
+    const rx = 0.5 * sx;
+    const rz = 0.5 * sz;
+    const ry = 1.0 * sy;
 
-      // Right/back/front transition vertices
-      [w, 0, d - 0.05 * d],       // v10 (bottom-back-right chamfer start)
-      [w, 0.05 * h, d],           // v11 (bottom-back-right chamfer end)
-      [w, 0.9 * h, d],            // v12 (top-back-right chamfer start)
-      [w, h, d - 0.1 * d],        // v13 (top-back-right chamfer end)
-      [w, 0, d - 0.5 * sz],       // v14 (front-right base point)
-      [w / 2, 0, 0],              // v15 (front-center base point)
+    const vertices: number[][] = [];
+    function addVertex(vx: number, vy: number, vz: number): number {
+      vertices.push([vx, vy, vz]);
+      return vertices.length - 1;
+    }
+
+    const S = 1;
+    const capIdx: number[][] = Array.from({ length: S + 1 }, () => []);
+
+    // Apex at y = h
+    const apex = addVertex(rx, h, rz);
+
+    // Create Cap Grid (Linear interpolation)
+    for (let i = 0; i <= S; i++) {
+      const t_u = i / S;
+      for (let j = 0; j <= S; j++) {
+        if (j === S) {
+          capIdx[i][j] = apex;
+          continue;
+        }
+        const t_v = j / S;
+        const vx = rx * (t_u * (1 - t_v) + t_v);
+        const vz = rz * ((1 - t_u) * (1 - t_v) + t_v);
+        const vy = 2.0 * sy + ry * t_v;
+        capIdx[i][j] = addVertex(vx, vy, vz);
+      }
+    }
+
+    // Base Cap vertices at y = 0
+    const baseCap: number[] = [];
+    for (let i = 0; i <= S; i++) {
+      const t_u = i / S;
+      baseCap.push(addVertex(t_u * rx, 0, (1 - t_u) * rz));
+    }
+
+    // Other Base vertices
+    const baseFR = addVertex(w, 0, 0);
+    const baseBR = addVertex(w, 0, d);
+    const baseBL = addVertex(0, 0, d);
+
+    // Lip top vertices
+    const lipFR = addVertex(w, 2.0 * sy, 0);
+    const lipBR = addVertex(w, 2.0 * sy, d);
+    const lipBL = addVertex(0, 2.0 * sy, d);
+    const lipL0 = addVertex(0, 2.0 * sy, rz);
+
+    // Top Deck Vertices at y = h
+    const T0 = addVertex(0, h, rz);
+    const T1 = addVertex(0, h, d);
+    const T2 = addVertex(w, h, d);
+    const T3 = addVertex(w, h, rz);
+
+    // Front Slope Profile at x = w
+    const frontSlopeR: number[] = [];
+    for (let j = 0; j <= S; j++) {
+      if (j === 0) {
+        frontSlopeR.push(lipFR);
+        continue;
+      }
+      if (j === S) {
+        frontSlopeR.push(T3);
+        continue;
+      }
+      const t_v = j / S;
+      const vy = 2.0 * sy + ry * t_v;
+      const vz = rz * t_v;
+      frontSlopeR.push(addVertex(w, vy, vz));
+    }
+
+    const indices: number[] = [];
+
+    // 1. Cap Triangles
+    for (let i = 0; i < S; i++) {
+      for (let j = 0; j < S; j++) {
+        const A = capIdx[i][j];
+        const B = capIdx[i + 1][j];
+        const C = capIdx[i + 1][j + 1];
+        const D = capIdx[i][j + 1];
+
+        if (A !== C && A !== B && B !== C) {
+          indices.push(A, C, B);
+        }
+        if (A !== D && A !== C && D !== C) {
+          indices.push(A, D, C);
+        }
+      }
+    }
+
+    // 2. Base Cap Lip (Vertical quads)
+    for (let i = 0; i < S; i++) {
+      const bA = baseCap[i];
+      const bB = baseCap[i + 1];
+      const tA = capIdx[i][0];
+      const tB = capIdx[i + 1][0];
+
+      indices.push(bA, tB, tA);
+      indices.push(bA, bB, tB);
+    }
+
+    // 3. Front-Right Lip
+    indices.push(baseCap[S], baseFR, lipFR);
+    indices.push(baseCap[S], lipFR, capIdx[S][0]);
+
+    // 4. Right Lip
+    indices.push(baseFR, baseBR, lipBR);
+    indices.push(baseFR, lipBR, lipFR);
+
+    // 5. Back Lip
+    indices.push(baseBR, baseBL, lipBL);
+    indices.push(baseBR, lipBL, lipBR);
+
+    // 6. Left Lip
+    indices.push(baseBL, baseCap[0], lipL0);
+    indices.push(baseBL, lipL0, lipBL);
+
+    // 7. Left Wall above lip
+    indices.push(lipL0, T1, T0);
+    indices.push(lipL0, lipBL, T1);
+
+    // 8. Back Wall above lip
+    indices.push(lipBL, T2, T1);
+    indices.push(lipBL, lipBR, T2);
+
+    // 9. Right Wall above lip (Fanned to front slope curve)
+    for (let j = 0; j < S; j++) {
+      indices.push(lipBR, frontSlopeR[j], frontSlopeR[j + 1]);
+    }
+    indices.push(lipBR, T3, T2);
+
+    // 10. Left transition curve gap filler (at z = rz)
+    for (let j = 0; j < S; j++) {
+      indices.push(T0, capIdx[0][j + 1], capIdx[0][j]);
+    }
+
+    // 11. Front Slope
+    for (let j = 0; j < S; j++) {
+      const tA = capIdx[S][j];
+      const tB = capIdx[S][j + 1];
+      const rA = frontSlopeR[j];
+      const rB = frontSlopeR[j + 1];
+
+      indices.push(tA, rB, rA);
+      indices.push(tA, tB, rB);
+    }
+
+    // 12. Base Face (facing -Y)
+    const baseVerts = [
+      baseCap[0],
+      ...baseCap.slice(1),
+      baseFR,
+      baseBR,
+      baseBL,
     ];
+    const numBase = baseVerts.length;
+    for (let k = 1; k < numBase - 1; k++) {
+      indices.push(baseVerts[0], baseVerts[k + 1], baseVerts[k]);
+    }
 
-    const indices: number[] = [
-      // 1. Left Face (x = 0)
-      0, 1, 2,
-      0, 2, 3,
-      0, 3, 4,
-      0, 4, 5,
-      0, 5, 6,
-      0, 6, 7,
-      0, 7, 8,
-      0, 8, 9,
-
-      // 2. Back Face (z = d)
-      2, 11, 12,
-      2, 12, 3,
-
-      // 3. Bottom-Right Chamfer Face
-      1, 10, 11,
-      1, 11, 2,
-
-      // 4. Top-Right Chamfer Face
-      3, 12, 13,
-      3, 13, 4,
-
-      // 5. Top Deck Face (y = h)
-      4, 13, 5,
-
-      // 6. Base Face (y = 0)
-      0, 10, 1,
-      0, 14, 10,
-      0, 15, 14,
-
-      // 7. Right Face (x = w)
-      14, 13, 12,
-      14, 12, 11,
-      14, 11, 10,
-
-      // 8. Diagonal transition faces
-      5, 13, 6,
-      6, 13, 14,
-      6, 14, 7,
-      7, 14, 15,
-      7, 15, 8,
-      8, 15, 9,
-      9, 15, 0,
-    ];
+    // 13. Top Deck (facing +Y)
+    indices.push(T0, T3, T2);
+    indices.push(T0, T2, T1);
 
     const positions: number[] = [];
     for (const idx of indices) {

@@ -32,18 +32,19 @@ export interface BlockShapeDefinition {
 
 export const HULL_SHAPES: BlockShapeDefinition[] = [
   { id: 'full', name: 'Full Block' },
-  { id: 'slope', name: 'Slope' },
-  { id: 'slope_flat', name: 'Slope Flat' },
   { id: 'beveled_edge', name: 'Beveled Edge' },
   { id: 'double_beveled_edge', name: 'Double Beveled Edge' },
+  { id: 'slope_flat', name: 'Slope Flat' },
+  { id: 'slope', name: 'Slope' },
   { id: 'beveled_corner', name: 'Beveled Corner', disabled: true },
+  { id: 'unknown_shape', name: 'Unknown Shape', disabled: true }, // TODO: create this shape.
   { id: 'wedge', name: 'Wedge' },
   { id: 'wedge_flat', name: 'Wedge Flat' },
-  { id: 'rounded_edge', name: 'Rounded Edge' },
-  { id: 'curved_corner', name: 'Curved Corner', disabled: true },
+  { id: 'rounded_slope', name: 'Rounded Slope' },
+  { id: 'rounded_corner', name: 'Rounded Corner', disabled: true },
   { id: 'rounded_edge_vertical', name: 'Rounded Edge Vertical' },
+  { id: 'rounded_edge', name: 'Rounded Edge' },
   { id: 'double_rounded_edge', name: 'Double Rounded Edge' },
-  { id: 'curved_slope', name: 'Curved Slope' },
 ] as const;
 
 

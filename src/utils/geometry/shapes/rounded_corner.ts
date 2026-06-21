@@ -1,14 +1,18 @@
 import * as THREE from 'three';
 import type { ShapeConfig } from '../types';
 
-export const curved_corner: ShapeConfig = {
-  id: 'curved_corner',
-  name: 'Curved Corner',
+export const rounded_corner: ShapeConfig = {
+  id: 'rounded_corner',
+  name: 'Rounded Corner',
   svgPath: 'M 11,6 L 26,6 L 26,21 Q 26,26 21,26 L 11,26 Z',
   generateGeometry(w: number, h: number, d: number) {
-    const rx = 0.8 * (w / 4.0);
-    const rz = 0.8 * (d / 3.0);
-    const ry = 0.8 * h;
+    const sx = w / 3.0;
+    const sy = h / 3.0;
+    const sz = d / 3.0;
+
+    const rx = 0.5 * sx;
+    const rz = 0.5 * sz;
+    const ry = 1.0 * sy;
 
     const vertices: number[][] = [];
     function addVertex(vx: number, vy: number, vz: number): number {
@@ -33,7 +37,7 @@ export const curved_corner: ShapeConfig = {
         const v = (j / S) * (Math.PI / 2);
         const vx = rx - rx * Math.cos(u) * Math.cos(v);
         const vz = rz - rz * Math.sin(u) * Math.cos(v);
-        const vy = 0.2 * h + ry * Math.sin(v);
+        const vy = 2.0 * sy + ry * Math.sin(v);
         capIdx[i][j] = addVertex(vx, vy, vz);
       }
     }
@@ -51,10 +55,10 @@ export const curved_corner: ShapeConfig = {
     const baseBL = addVertex(0, 0, d);
 
     // Lip top vertices
-    const lipFR = addVertex(w, 0.2 * h, 0);
-    const lipBR = addVertex(w, 0.2 * h, d);
-    const lipBL = addVertex(0, 0.2 * h, d);
-    const lipL0 = addVertex(0, 0.2 * h, rz);
+    const lipFR = addVertex(w, 2.0 * sy, 0);
+    const lipBR = addVertex(w, 2.0 * sy, d);
+    const lipBL = addVertex(0, 2.0 * sy, d);
+    const lipL0 = addVertex(0, 2.0 * sy, rz);
 
     // Top Deck Vertices at y = h
     const T0 = addVertex(0, h, rz);
@@ -74,7 +78,7 @@ export const curved_corner: ShapeConfig = {
         continue;
       }
       const v = (j / S) * (Math.PI / 2);
-      const vy = 0.2 * h + ry * Math.sin(v);
+      const vy = 2.0 * sy + ry * Math.sin(v);
       const vz = rz * (1 - Math.cos(v));
       frontSlopeR.push(addVertex(w, vy, vz));
     }
@@ -89,8 +93,12 @@ export const curved_corner: ShapeConfig = {
         const C = capIdx[i + 1][j + 1];
         const D = capIdx[i][j + 1];
 
-        indices.push(A, C, B);
-        indices.push(A, D, C);
+        if (A !== C && A !== B && B !== C) {
+          indices.push(A, C, B);
+        }
+        if (A !== D && A !== C && D !== C) {
+          indices.push(A, D, C);
+        }
       }
     }
 

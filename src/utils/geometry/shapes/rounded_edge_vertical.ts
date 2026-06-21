@@ -6,7 +6,7 @@ export const rounded_edge_vertical: ShapeConfig = {
   name: 'Rounded Edge Vertical',
   svgPath: 'M 6,6 L 26,6 L 26,26 L 11,26 Q 6,26 6,21 Z',
   generateGeometry(w: number, h: number, d: number) {
-    const sx = w / 4.0;
+    const sx = w / 3.0;
     const sz = d / 3.0;
 
     const profile: number[][] = [];
@@ -15,8 +15,8 @@ export const rounded_edge_vertical: ShapeConfig = {
     const steps = 12;
     for (let i = 0; i < steps; i++) {
       const theta = (i / (steps - 1)) * (Math.PI / 2);
-      const x = 0.8 * sx * (1 - Math.cos(theta));
-      const z = 0.8 * sz * (1 - Math.sin(theta));
+      const x = 0.5 * sx * (1 - Math.cos(theta));
+      const z = 0.5 * sz * (1 - Math.sin(theta));
       profile.push([x, z]);
     }
 
