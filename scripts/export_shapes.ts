@@ -51,15 +51,45 @@ function main() {
     console.log(`Created directory: ${OUTPUT_DIR}`);
   }
 
-  let combinedObj = '# Merged spacecraft-shipbuilder shape geometries\n\n';
+  const args = process.argv.slice(2);
+  let width = 4;
+  let depth = 3;
+  let height = 2;
+
+  const input = args.join(' ');
+  const match = input.match(/(\d+(?:\.\d+)?)\s*[xX,]\s*(\d+(?:\.\d+)?)\s*[xX,]\s*(\d+(?:\.\d+)?)/);
+  if (match) {
+    width = parseFloat(match[1]);
+    depth = parseFloat(match[2]);
+    height = parseFloat(match[3]);
+  } else if (args.length > 0) {
+    width = parseFloat(args[0]);
+    depth = args[1] ? parseFloat(args[1]) : 3;
+    height = args[2] ? parseFloat(args[2]) : 2;
+  }
+
+  if (isNaN(width) || isNaN(depth) || isNaN(height)) {
+    console.error('Error: Dimensions must be valid numbers.');
+    console.log('Usage: npm run export-shapes -- [width] [depth] [height]');
+    console.log('Or:    npm run export-shapes [width]x[depth]x[height]');
+    process.exit(1);
+  }
+
+  console.log(`Generating shape geometries matching name pattern [Width]x[Depth]x[Height] (e.g. 4x3x2)`);
+  console.log(`Using dimensions: Width=${width}, Depth=${depth}, Height=${height}`);
+  console.log(`(Underlying 3D coordinates: w=${width}, h=${height}, d=${depth})`);
+  console.log(`To customize dimensions, run: npm run export-shapes -- [width] [depth] [height]`);
+  console.log(`Or:                          npm run export-shapes [width]x[depth]x[height]`);
+
+  let combinedObj = `# Merged spacecraft-shipbuilder shape geometries (w=${width}, h=${height}, d=${depth} -> name pattern: ${width}x${depth}x${height})\n\n`;
   let currentVertexOffset = 0;
   const shapes = Object.values(SHAPE_CONFIGS);
 
   console.log(`Found ${shapes.length} shapes to export.`);
 
   shapes.forEach((shape, index) => {
-    // Generate geometry as a representative 4x2x3 unit block so features like flat sections are visible
-    const geom = shape.generateGeometry(4, 2, 3);
+    // Generate geometry with the specified dimensions
+    const geom = shape.generateGeometry(width, height, depth);
     
     // Save individual OBJ file (no translation, offset starts at 0)
     const { objContent: individualObj } = geometryToObj(shape.name, shape.id, geom);
@@ -67,8 +97,8 @@ function main() {
     fs.writeFileSync(individualPath, individualObj, 'utf-8');
     console.log(`Exported individual shape: ${shape.id} -> ${individualPath}`);
 
-    // Append to combined OBJ file (spaced out by 6 units along X axis)
-    const spacing = 6.0;
+    // Append to combined OBJ file (spaced out dynamically based on width)
+    const spacing = width + 2.0;
     const translation = { x: index * spacing, y: 0, z: 0 };
     const { objContent: partObj, vertexCount } = geometryToObj(
       shape.name,
