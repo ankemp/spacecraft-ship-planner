@@ -3,6 +3,7 @@ import { useShipStore } from '../../store/shipStore';
 import { BLOCK_DEFINITIONS, HULL_SHAPES } from '../../config/blocks';
 import { Shape3DPreview } from '../Shape3DPreview';
 import type { ActiveShapeId } from '../../utils/geometry';
+import { ChevronIcon } from '../Icon';
 
 interface BlockPaletteProps {
   isPaletteOpen: boolean;
@@ -56,9 +57,7 @@ export function BlockPalette({
           className="p-1 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors cursor-pointer"
           title="Collapse Panel"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronIcon direction="left" className="w-4 h-4" />
         </button>
       </div>
 

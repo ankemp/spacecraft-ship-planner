@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from 'react';
 import { useShipStore, selectDerivedStats } from '../../store/shipStore';
 import { BLOCK_DEFINITIONS, STAT_METADATA } from '../../config/blocks';
-import { StatIcon, GripIcon } from '../Icon';
+import { StatIcon, GripIcon, ChevronIcon, CheckCircleIcon, AlertTriangleIcon } from '../Icon';
 
 const formatStatKey = (key: string): string => {
   return key
@@ -343,9 +343,7 @@ export function SpecsCard() {
               <div className="absolute top-[48px] left-5 right-5 bg-black/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl opacity-0 invisible group-hover/status:opacity-100 group-hover/status:visible transition-all duration-300 z-50 pointer-events-none flex flex-col gap-3">
                 {flightStatus.warnings.length === 0 ? (
                   <div className="flex gap-2.5 text-xs text-emerald-400 text-left">
-                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <CheckCircleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
                     <div className="flex flex-col gap-0.5">
                       <span className="font-bold text-emerald-400">Flight Capable</span>
                       <span className="text-white/60 leading-normal">Your ship is fully flight capable and meets all construction specifications!</span>
@@ -385,15 +383,7 @@ export function SpecsCard() {
               Reset Order
             </button>
           )}
-          <svg
-            className={`w-3.5 h-3.5 text-white/40 transition-transform duration-300 ${isSpecsCollapsed ? '-rotate-90' : 'rotate-0'}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-          </svg>
+          <ChevronIcon isOpen={!isSpecsCollapsed} className="w-3.5 h-3.5 text-white/40" />
         </div>
       </div>
 
@@ -401,9 +391,7 @@ export function SpecsCard() {
         {/* Disconnected structures warning */}
         {derivedStats.disconnectedBlockIds.length > 0 && (
           <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-start gap-2.5 text-xs text-red-400 animate-pulse">
-            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+            <AlertTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div className="flex flex-col gap-0.5">
               <span className="font-bold">Disconnected Structure</span>
               <span className="text-white/60 leading-normal">
@@ -434,9 +422,7 @@ export function SpecsCard() {
                 {Math.round(derivedStats.efficiency * 100)}% Eff
               </span>
               <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
-                <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.sp ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
+                <ChevronIcon isOpen={!collapsedSections.sp} className="w-3 h-3" />
               </span>
             </div>
           </button>
@@ -484,9 +470,7 @@ export function SpecsCard() {
                 </span>
               )}
               <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
-                <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.power ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
+                <ChevronIcon isOpen={!collapsedSections.power} className="w-3 h-3" />
               </span>
             </div>
           </button>
@@ -564,9 +548,7 @@ export function SpecsCard() {
                 </span>
               )}
               <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
-                <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.heat ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
+                <ChevronIcon isOpen={!collapsedSections.heat} className="w-3 h-3" />
               </span>
             </div>
           </button>
@@ -630,9 +612,7 @@ export function SpecsCard() {
                 </span>
               )}
               <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
-                <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.structure ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
+                <ChevronIcon isOpen={!collapsedSections.structure} className="w-3 h-3" />
               </span>
             </div>
           </button>
@@ -685,9 +665,7 @@ export function SpecsCard() {
                 </span>
               )}
               <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
-                <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.propulsion ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
+                <ChevronIcon isOpen={!collapsedSections.propulsion} className="w-3 h-3" />
               </span>
             </div>
           </button>
@@ -783,9 +761,7 @@ export function SpecsCard() {
                   </span>
                 )}
                 <span className="text-white/40 hover:text-white transition-colors cursor-pointer">
-                  <svg className={`w-3 h-3 transition-transform duration-200 ${collapsedSections.other ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                  </svg>
+                  <ChevronIcon isOpen={!collapsedSections.other} className="w-3 h-3" />
                 </span>
               </div>
             </button>

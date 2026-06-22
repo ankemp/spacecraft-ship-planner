@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useShipStore } from '../../store/shipStore';
 import { serializeBlocks } from '../../utils/serialization';
+import { ChevronIcon, CheckIcon, CloseIcon, EditIcon, TrashIcon, ShareIcon, PlusIcon } from '../Icon';
 
 export function ShipStorage() {
   const blocks = useShipStore(s => s.blocks);
@@ -66,15 +67,7 @@ export function ShipStorage() {
           )}
         </div>
 
-        <svg
-          className={`w-3.5 h-3.5 text-white/40 transition-transform duration-300 ${isStorageCollapsed ? '-rotate-90' : 'rotate-0'}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-        </svg>
+        <ChevronIcon isOpen={!isStorageCollapsed} className="w-3.5 h-3.5 text-white/40" />
       </button>
 
       <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isStorageCollapsed ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-[500px] opacity-100 mt-4 flex flex-col gap-3'}`}>
@@ -106,18 +99,14 @@ export function ShipStorage() {
                         className="p-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-400 rounded-md cursor-pointer"
                         title="Save"
                       >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
+                        <CheckIcon className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => setEditingShipId(null)}
                         className="p-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-md cursor-pointer"
                         title="Cancel"
                       >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <CloseIcon className="w-3 h-3" />
                       </button>
                     </div>
                   ) : (
@@ -132,9 +121,7 @@ export function ShipStorage() {
                           className="p-1 hover:bg-white/10 text-white/50 hover:text-white rounded transition-colors cursor-pointer"
                           title="Rename"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                          </svg>
+                          <EditIcon className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => {
@@ -144,9 +131,7 @@ export function ShipStorage() {
                           className="p-1 hover:bg-red-500/20 text-red-400/50 hover:text-red-400 rounded transition-colors cursor-pointer"
                           title="Delete"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                          </svg>
+                          <TrashIcon className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </>
@@ -176,9 +161,7 @@ export function ShipStorage() {
                         className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-white/80 hover:text-white transition-all font-semibold flex items-center gap-1 cursor-pointer"
                         title="Copy Share Link"
                       >
-                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935-2.186 2.25 2.25 0 00-3.935 2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                        </svg>
+                        <ShareIcon className="w-2.5 h-2.5" />
                         Share
                       </button>
                       <button
@@ -238,9 +221,7 @@ export function ShipStorage() {
             disabled={blocks.length === 0}
             className="w-full py-2.5 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white transition-all hover:scale-101 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5"
           >
-            <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
+            <PlusIcon className="w-3.5 h-3.5 text-blue-400" />
             Save Current Ship
           </button>
         )}

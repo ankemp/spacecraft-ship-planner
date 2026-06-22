@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useShipStore } from '../../store/shipStore';
 import { BLOCK_DEFINITIONS, HULL_SHAPES } from '../../config/blocks';
 import { Shape3DPreview } from '../Shape3DPreview';
-import { RotateIcon, FlipIcon } from '../Icon';
+import { RotateIcon, FlipIcon, CloseIcon, MoveIcon } from '../Icon';
 
 const enabledShapesCount = HULL_SHAPES.filter(shape => !('disabled' in shape && shape.disabled)).length;
 
@@ -57,9 +57,7 @@ export function BlockInspector() {
           }}
           className="p-1 hover:bg-white/10 rounded text-white/60 hover:text-white cursor-pointer flex-shrink-0"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <CloseIcon className="w-4 h-4" />
         </button>
       </div>
 
@@ -84,9 +82,7 @@ export function BlockInspector() {
             onClick={() => startMoveBlock(selectedBlock.id)}
             className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 hover:scale-102 cursor-pointer"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 3.75H6A2.25 2.25 0 003.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0120.25 6v1.5m0 9V18a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-            </svg>
+            <MoveIcon className="w-3.5 h-3.5" />
             Move Block (M)
           </button>
 
