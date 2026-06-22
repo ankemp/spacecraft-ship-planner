@@ -7,7 +7,7 @@ export const ChevronIcon = ({
     direction?: 'up' | 'down' | 'left' | 'right';
     className?: string;
 }) => {
-    let rotationClass = '';
+    let rotationClass: string;
     if (isOpen !== undefined) {
         rotationClass = isOpen ? 'rotate-0' : '-rotate-90';
     } else {
