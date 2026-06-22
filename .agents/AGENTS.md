@@ -2,7 +2,7 @@
 
 ## Shipbuilding Specification Compliance
 
-Whenever you are implementing, modifying, or refactoring shipbuilding features, UI stats panels, building constraints, or math calculations, you MUST consult and adhere strictly to the rules documented in [IN_GAME_SPEC.md](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/IN_GAME_SPEC.md).
+Whenever you are implementing, modifying, or refactoring shipbuilding features, UI stats panels, building constraints, or math calculations, you MUST consult and adhere strictly to the rules documented in [IN_GAME_SPEC.md](../IN_GAME_SPEC.md).
 
 Key areas of alignment:
 - **Connectivity & Adjacency**: All blocks must form a single contiguous structure connected via face-to-face contact to the cockpit/core.
@@ -16,7 +16,7 @@ Key areas of alignment:
 
 ## Performance & Potato Mode Compliance
 
-Whenever adding new features, UI controls, or 3D animations, you MUST strictly adhere to the guidelines, checklists, and performance architecture detailed in [POTATO_MODE.md](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/POTATO_MODE.md).
+Whenever adding new features, UI controls, or 3D animations, you MUST strictly adhere to the guidelines, checklists, and performance architecture detailed in [POTATO_MODE.md](../POTATO_MODE.md).
 
 Key compliance rules:
 - **Gate cosmetic/non-essential features** (e.g. menu shapes, environment presets, complex analysis) behind the `potatoMode` flag.

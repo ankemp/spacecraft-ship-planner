@@ -23,7 +23,7 @@ src/utils/geometry/
 To add a new shape (e.g. `my_new_shape`), follow these three steps:
 
 ### 1. Register the Shape ID in Config
-First, add your shape to the `HULL_SHAPES` array in [blocks.ts](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/src/config/blocks.ts):
+First, add your shape to the `HULL_SHAPES` array in [blocks.ts](../../config/blocks.ts):
 ```typescript
 export const HULL_SHAPES = [
   ...

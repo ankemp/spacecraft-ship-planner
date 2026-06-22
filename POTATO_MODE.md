@@ -14,7 +14,7 @@ Potato Mode resolves this by conditionally replacing heavy 3D previews with ligh
 ## Technical Implementations & Optimizations
 
 ### 1. 2D Previews Fallback
-In [Shape3DPreview.tsx](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/src/components/Shape3DPreview.tsx), we check the `potatoMode` flag from the ship store:
+In [Shape3DPreview.tsx](src/components/Shape3DPreview.tsx), we check the `potatoMode` flag from the ship store:
 ```typescript
 const potatoMode = useShipStore(s => s.potatoMode);
 ```
@@ -27,7 +27,7 @@ if (potatoMode) {
 This reduces the page's WebGL context footprint from **11+ contexts down to exactly 1 context** (just the main 3D builder viewport).
 
 ### 2. Disabling Reflection Maps & Environment
-In the main 3D scene [Scene.tsx](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/src/components/Scene.tsx), we conditionally omit the environment mapping helper:
+In the main 3D scene [Scene.tsx](src/components/Scene.tsx), we conditionally omit the environment mapping helper:
 ```tsx
 {!potatoMode && <Environment preset="city" />}
 ```
@@ -69,4 +69,4 @@ When adding animations, particle effects, heavy shading effects, or additional 3
 | Autosave I/O | Debounced 500ms + `requestIdleCallback` |
 | R3F rendering | `frameloop="demand"` + `Invalidator` — renders only on state change |
 | Block re-renders on tool change | `canInteract` bool prop passed from Scene; Blocks don't subscribe to `activeTool`/`movingBlock` |
-For future performance enhancements and known issues (such as implementing `InstancedMesh`), please refer to [TODO.md](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/TODO.md).
+For future performance enhancements and known issues (such as implementing `InstancedMesh`), please refer to [TODO.md](TODO.md).

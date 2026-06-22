@@ -24,11 +24,11 @@ In the 3D builder interface, the **Front-Edge** (the face at $X = 0$, or $X = w$
 
 ## Steps to Add a Shape
 
-1. **Define the shape geometry generator function in [geometry.ts](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/src/utils/geometry.ts)**:
+1. **Define the shape geometry generator function in [geometry.ts](../utils/geometry.ts)**:
    - For custom vertex-based shapes, create a function that defines its vertices and triangle indices, builds a `THREE.BufferGeometry`, and returns it.
    - For Three.js built-in geometries, instantiate the geometry (e.g., `CylinderGeometry`, `SphereGeometry`), scale/translate it to fit inside the bounding box of `w`, `h`, `d`, and return it.
 
-2. **Add the generator to the `SHAPE_GENERATORS` lookup dictionary in [geometry.ts](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/src/utils/geometry.ts)**:
+2. **Add the generator to the `SHAPE_GENERATORS` lookup dictionary in [geometry.ts](../utils/geometry.ts)**:
    ```typescript
    const SHAPE_GENERATORS: Record<ActiveShapeId, (w: number, h: number, d: number) => THREE.BufferGeometry> = {
      full: getBoxGeometry,
@@ -37,7 +37,7 @@ In the 3D builder interface, the **Front-Edge** (the face at $X = 0$, or $X = w$
    };
    ```
 
-3. **Update the `HULL_SHAPES` configuration array in [blocks.ts](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/src/config/blocks.ts) to expose the new shape to the UI**:
+3. **Update the `HULL_SHAPES` configuration array in [blocks.ts](../config/blocks.ts) to expose the new shape to the UI**:
    ```typescript
    export const HULL_SHAPES = [
      { id: 'full', name: 'Full Block' },
