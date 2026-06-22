@@ -26,7 +26,8 @@ A high-performance, web-based 3D design and planning utility for engineering mod
    - [WebGL Context Optimization](#webgl-context-optimization)
    - [On-Demand Rendering](#on-demand-rendering)
    - [Optimization Rules](#optimization-rules)
-6. [Getting Started & Development](#getting-started--development)
+6. [Testing Strategy](#testing-strategy)
+7. [Getting Started & Development](#getting-started--development)
 
 ---
 
@@ -110,9 +111,9 @@ All custom meshes must align to the coordinate system:
 - **Width (Z-Axis)**: $Z=0$ to $Z=d$ represent side-to-side boundaries.
 
 ### Steps to Add a Shape
-1. Register the shape identifier in the `HULL_SHAPES` array in [blocks.ts](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/src/config/blocks.ts).
+1. Register the shape identifier in the `HULL_SHAPES` array in [blocks.ts](./src/config/blocks.ts).
 2. Create a configuration file `src/utils/geometry/shapes/[shape_id].ts`.
-3. Register the config in `SHAPE_CONFIGS` in [index.ts](file:///c:/Users/Andrew/workspace/spacecraft-shipbuilder/src/utils/geometry/shapes/index.ts).
+3. Register the config in `SHAPE_CONFIGS` in [index.ts](./src/utils/geometry/shapes/index.ts).
 
 ### Shape Code Boilerplate
 ```typescript
@@ -183,6 +184,29 @@ To save GPU and CPU resources:
 
 ---
 
+## Testing Strategy
+
+To ensure stability across modular shipbuilding math, collision systems, and connectivity algorithms, the codebase employs a unit testing strategy powered by **Vitest**.
+
+### 1. Test Architecture & Environment
+- **Runner**: [Vitest](https://vitest.dev/) acts as the native testing framework, integrating directly with our Vite compiler config.
+- **Environment**: A lightweight, pure Node.js test environment is used for maximum speed. Browser APIs (like `window.location` or `localStorage`) are mocked or safely ignored using environment guards.
+- **Location**: Test files reside in `__tests__/` subdirectories adjacent to the target modules.
+
+### 2. Core Test Suites
+We maintain test coverage across critical application layers:
+- **Calculation Engine** ([shipStats.test.ts](./src/utils/__tests__/shipStats.test.ts)): Validates the correctness of formulas (SP efficiency limits, power balances, global heat pool balances, and structural frame ratios) and verifies thruster boost additive math according to [IN_GAME_SPEC.md](./IN_GAME_SPEC.md).
+- **Adjacency & Connectivity (BFS)** ([shipStats.test.ts](./src/utils/__tests__/shipStats.test.ts)): Tests face-to-face adjacency checks (excluding invalid edge/corner contact) and checks that structural BFS connectivity traversal correctly marks floating block segments.
+- **Serialization** ([serialization.test.ts](./src/utils/__tests__/serialization.test.ts)): Confirms URL-safe base64 string round-trips correctly preserve ship designs (including block types, coords, rotations, colors, custom shapes, and binary flips) and verify robust crash-prevention for invalid strings.
+- **Geometry & Collision** ([shipStore.test.ts](./src/store/__tests__/shipStore.test.ts)): Validates vertex rotation calculations in `getBlockBounds` and overlap detection inside `isBoundsColliding`.
+- **Store Actions** ([shipStore.test.ts](./src/store/__tests__/shipStore.test.ts)): Simulates Zustand store mutations like adding/deleting blocks, preventing placement overlap, and enforcing the single-cockpit limit.
+
+### 3. Test Execution
+- **Run Tests (CI/CD)**: `npm run test` (runs tests once).
+- **Interactive Watch Mode**: `npm run test:watch` (automatically re-runs tests on file edits).
+
+---
+
 ## Getting Started & Development
 
 ### Installation
@@ -207,6 +231,12 @@ npm run build
 Pre-render UI preview assets from geometry files:
 ```bash
 npm run export-shapes
+```
+
+### Testing
+Run the Vitest unit tests:
+```bash
+npm run test
 ```
 
 ### Linting

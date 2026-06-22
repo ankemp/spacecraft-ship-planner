@@ -25,3 +25,8 @@ Key compliance rules:
 - **Memoize expensive derived state** (e.g., BFS-based selectors) keyed on the blocks reference.
 - **Render on demand** by subscribing state changes that affect 3D visuals to the R3F `<Canvas>` `Invalidator`.
 
+---
+
+## Relative URLs in Documentation
+
+Whenever writing or updating markdown documentation in the project (such as `README.md`, `IN_GAME_SPEC.md`, `POTATO_MODE.md`, or other code reference docs), you MUST use **relative URLs** (e.g. `./IN_GAME_SPEC.md` or `./src/utils/__tests__/shipStats.test.ts`) instead of absolute local file URIs (e.g. `file:///c:/...` or absolute system paths). This ensures all links remain fully functional when the repository is viewed on platforms like GitHub, GitLab, or other development systems.
